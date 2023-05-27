@@ -13,6 +13,9 @@ typedef struct {
   int16_t step_index;
   int16_t last_estimate;
 
+  size_t adpcm_counter;
+
+  int32_t resample_rate;
   size_t resample_counter;
 
 } ADPCM_DECODE_HANDLE;
