@@ -231,7 +231,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   snd_pcm_hw_params_get_period_size(pcm_params, &num_frames, NULL);
   fprintf(stderr,"# frames in a period: %d\n", num_frames);
 
-  size_t pcm_buffer_len = num_frames * pcm_channels * sizeof(int16_t); //pcm_freq * pcm_channels * 2;
+  size_t pcm_buffer_len = num_frames * pcm_channels; //pcm_freq * pcm_channels * 2;
   pcm_buffer = malloc(sizeof(int16_t) * pcm_buffer_len);
   fp = fopen(pcm_file_name, "rb");
   if (fp == NULL) {
@@ -298,7 +298,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   }
 
   size_t fread_len = 0;
-  size_t fread_buffer_len = 1024;
+  size_t fread_buffer_len = pcm_buffer_len;
   do {
     size_t len = fread(pcm_buffer, sizeof(int16_t), fread_buffer_len, fp);
     if (len <= 0) break;
