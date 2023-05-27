@@ -267,8 +267,8 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     "ADPCM(MSM6258V)");
 
   // describe playback drivers
-  printf("PCM driver    : %s\n",
-    "ALSA");
+  printf("PCM driver    : %s\n", "ALSA");
+  printf("PCM device    : %s\n", pcm_device_name);
 
   if (input_format == FORMAT_ADPCM) {
     float pcm_1sec_size = pcm_freq * 0.5;
