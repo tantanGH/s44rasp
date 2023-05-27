@@ -119,7 +119,7 @@ void adpcm_decode_close(ADPCM_DECODE_HANDLE* adpcm) {
 //
 //  execute adpcm decoding
 //
-int32_t adpcm_decode_exec(ADPCM_DECODE_HANDLE* adpcm, void* output_buffer, uint8_t* source_buffer, size_t source_buffer_len) {
+int32_t adpcm_decode_exec(ADPCM_DECODE_HANDLE* adpcm, int16_t* output_buffer, uint8_t* source_buffer, size_t source_buffer_len) {
 
   size_t source_buffer_ofs = 0;
   size_t output_buffer_ofs = 0;
