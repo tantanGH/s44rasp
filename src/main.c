@@ -27,6 +27,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   int16_t* pcm_buffer = NULL; 
   uint8_t* pcm_file_name = NULL;
   uint8_t* pcm_device_name = NULL;
+  int32_t alsa_rc = 0;
   FILE* fp = NULL;
 
   // decoders
@@ -162,16 +163,16 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
 //  }
 
   // init ALSA device
-  if (snd_pcm_open(&pcm_handle, pcm_device_name != NULL ? pcm_device_name : (uint8_t*)"default", 
-                    SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK) != 0) {
-    printf("error: pcm device (%s) open error.\n", pcm_device_name);
+  if ((alsa_rc = snd_pcm_open(&pcm_handle, pcm_device_name != NULL ? pcm_device_name : (uint8_t*)"default", 
+                    SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK)) != 0) {
+    printf("error: pcm device (%s) open error. (%s)\n", pcm_device_name, snd_strerror(alsa_rc));
     goto exit;
   }
 
   // set ASLA PCM parameters
-  if (snd_pcm_set_params(pcm_handle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, 
-                          pcm_channels, pcm_freq, ALSA_SOFT_RESAMPLE, ALSA_LATENCY) != 0) {
-    printf("error: pcm device setting error.\n");
+  if ((alsa_rc = snd_pcm_set_params(pcm_handle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, 
+                          pcm_channels, pcm_freq, ALSA_SOFT_RESAMPLE, ALSA_LATENCY)) != 0) {
+    printf("error: pcm device setting error. (%s)\n", snd_strerror(alsa_rc));
     goto exit;
   }
 
@@ -248,15 +249,18 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     pcm_buffer_uint8[ i * 2 + 0 ] = pcm_buffer_uint8[ i * 2 + 1]; 
     pcm_buffer_uint8[ i * 2 + 1 ] = c;
   }
-  if (snd_pcm_writei(pcm_handle, (const void*)pcm_buffer, fread_len) != 0) {
-    printf("error: pcm device write error.\n");
+  if ((alsa_rc = snd_pcm_writei(pcm_handle, (const void*)pcm_buffer, fread_len)) != 0) {
+    printf("error: pcm device write error. (%s)\n", snd_strerror(alsa_rc));
     goto exit;
   }
   
   fclose(fp);
   fp = NULL;
 
-  snd_pcm_drain(pcm_handle);
+  if ((alsa_rc = snd_pcm_drain(pcm_handle)) != 0) {
+    printf("error: pcm drain error. (%s)\n", snd_strerror(alsa_rc));
+    goto exit;
+  }
 
   getchar();
 
