@@ -298,7 +298,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
           goto exit;
         }
       }
-      printf("\r%d/%d", fread_len, pcm_data_size);
+      printf("\r%d/%d (%4.2f%%)", fread_len, pcm_data_size, fread_len * 100.0 / pcm_data_size);
       fflush(stdout);
     } while (fread_len < pcm_data_size && abort_flag == 0);
 
@@ -322,7 +322,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
           goto exit;
         }
       }
-      printf("\r%d/%d", fread_len * sizeof(int16_t), pcm_data_size);
+      printf("\r%d/%d (%4.2f%%)", fread_len, pcm_data_size, fread_len * 100.0 / pcm_data_size);
       fflush(stdout);
     } while (fread_len * sizeof(int16_t) < pcm_data_size && abort_flag == 0);
   }
