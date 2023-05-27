@@ -308,9 +308,8 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
       size_t len = fread(fread_buffer, sizeof(uint8_t), fread_buffer_len, fp);
       if (len == 0) break;
       fread_len += len;
-      adpcm_decode_exec(&adpcm_decoder, pcm_buffer, fread_buffer, len);
-      snd_pcm_uframes_t num_frames = len / pcm_channels;
-      if ((alsa_rc = snd_pcm_writei(pcm_handle, (const void*)pcm_buffer, num_frames)) < 0) {    
+      size_t decode_len = adpcm_decode_exec(&adpcm_decoder, pcm_buffer, fread_buffer, len);
+      if ((alsa_rc = snd_pcm_writei(pcm_handle, (const void*)pcm_buffer, decode_len / 2)) < 0) {    
         if (snd_pcm_recover(pcm_handle, alsa_rc, 0) < 0) {
           printf("error: fatal pcm data write error.\n");
           goto exit;
@@ -328,13 +327,14 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
       size_t len = fread(fread_buffer, sizeof(int16_t), fread_buffer_len, fp);
       if (len == 0) break;
       fread_len += len;
+      size_t decode_len = 0;
       if (input_format == FORMAT_RAW) {
-        raw_decode_exec(&raw_decoder, pcm_buffer, fread_buffer, len);
+        decode_len = raw_decode_exec(&raw_decoder, pcm_buffer, fread_buffer, len);
       } else if (input_format == FORMAT_WAV) {
-        wav_decode_exec(&wav_decoder, pcm_buffer, fread_buffer, len);
+        decode_len = wav_decode_exec(&wav_decoder, pcm_buffer, fread_buffer, len);
       }
-      snd_pcm_uframes_t num_frames = len / pcm_channels;
-      if ((alsa_rc = snd_pcm_writei(pcm_handle, (const void*)pcm_buffer, num_frames)) < 0) {    
+      printf("decode_len = %d, len = %d\n", decode_len, len);
+      if ((alsa_rc = snd_pcm_writei(pcm_handle, (const void*)pcm_buffer, decode_len / 2)) < 0) {    
         if (snd_pcm_recover(pcm_handle, alsa_rc, 0) < 0) {
           printf("error: fatal pcm data write error.\n");
           goto exit;
