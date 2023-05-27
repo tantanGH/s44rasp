@@ -86,15 +86,16 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     
     // Iterate through the possible formats and check support
     for (int32_t format = SND_PCM_FORMAT_S8; format <= SND_PCM_FORMAT_FLOAT64; format++) {
-        if (snd_pcm_format_mask_test(format_mask, format)) {
-            printf("Format %s is supported\n", snd_pcm_format_name(format));
-        }
+      if (snd_pcm_format_mask_test(format_mask, format)) {
+        printf("Format %s is supported\n", snd_pcm_format_name(format));
+      }
     }
     
     // Cleanup and close the PCM device
     snd_pcm_format_mask_free(format_mask);
     snd_pcm_hw_params_free(params);
-    snd_pcm_close(pcm);
+    snd_pcm_close(pcm_handle);
+    pcm_handle = NULL;
     goto exit;
   }
 
