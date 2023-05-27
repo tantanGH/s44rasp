@@ -40,7 +40,6 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   // pcm attribs
   snd_pcm_t* pcm_handle = NULL;
   snd_pcm_hw_params_t* pcm_params = NULL;
-  snd_pcm_uframes_t num_frames = 0;
   int16_t* pcm_buffer = NULL; 
   void* fread_buffer = NULL;
   uint8_t* pcm_file_name = NULL;
@@ -269,24 +268,32 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   }
 
   // set ALSA PCM parameters (16bit stereo output ... fixed)
-  if ((alsa_rc = snd_pcm_set_params(pcm_handle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, 
-                          2, pcm_freq, 1, pcm_latency)) != 0) {
-    printf("error: pcm device setting error. (%s)\n", snd_strerror(alsa_rc));
+  snd_pcm_hw_params_malloc(&pcm_params);
+  snd_pcm_hw_params_any(pcm_handle, pcm_params);
+
+  snd_pcm_hw_params_set_access(pcm_handle, pcm_params, SND_PCM_ACCESS_RW_INTERLEAVED);
+  snd_pcm_hw_params_set_format(pcm_handle, pcm_params, SND_PCM_FORMAT_S16_LE);    // 16bit fixed
+  snd_pcm_hw_params_set_channels(pcm_handle, pcm_params, 2);                      // stereo fixed
+
+  if (pcm_freq < 44100) {
+    unsigned int desired_rate = 48000;
+    snd_pcm_hw_params_set_rate_near(pcm_handle, pcm_params, &desired_rate, 0);
+  } else {
+    snd_pcm_hw_params_set_rate(pcm_handle, pcm_params, pcm_freq, 0);
+  }
+
+  if ((alsa_rc = snd_pcm_hw_params(pcm_handle, pcm_params)) != 0) {
+    printf("error: pcm hw params setting error. (%s)\n", snd_strerror(alsa_rc));
     goto exit;
   }
 
-  if (input_format == FORMAT_ADPCM) {
-        
-    snd_pcm_hw_params_t* pcm_params = NULL;
-    
-    snd_pcm_hw_params_malloc(&pcm_params);
-    snd_pcm_hw_params_any(pcm_handle, pcm_params);
+//  if ((alsa_rc = snd_pcm_set_params(pcm_handle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, 
+//                          2, pcm_freq, 1, pcm_latency)) != 0) {
+//    printf("error: pcm device setting error. (%s)\n", snd_strerror(alsa_rc));
+//    goto exit;
+//  }
 
-    unsigned int desired_rate = 48000;
-    snd_pcm_hw_params_set_rate_near(pcm_handle, pcm_params, &desired_rate, 0);
-    snd_pcm_hw_params(pcm_handle, pcm_params);
-    snd_pcm_hw_params_free(pcm_params);
-  }
+  snd_pcm_hw_params(pcm_handle, pcm_params);
 
   // sigint handler
   abort_flag = 0;
@@ -364,6 +371,12 @@ exit:
   if (fp != NULL) {
     fclose(fp);
     fp = NULL;
+  }
+
+  // close alsa params
+  if (pcm_params != NULL) {
+    snd_pcm_hw_params_free(pcm_params);
+    pcm_params = NULL;
   }
 
   // close alsa device
