@@ -15,6 +15,12 @@ int32_t oled_ssd1306_open(OLED_SSD1306* ssd1306, int16_t width, int16_t height) 
   ssd1306->width = width;
   ssd1306->height = height;
   
+  // init
+  if (gpioInitialise() < 0) {
+    printf("error: pigpio initialization error.\n");
+    goto exit;
+  }
+
   // open i2c connection
   ssd1306->handle = i2cOpen(OLED_I2C_BUS, OLED_I2C_ADDR, 0);
 
