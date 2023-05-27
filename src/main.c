@@ -10,6 +10,7 @@
 #include "adpcm_decode.h"
 #include "raw_decode.h"
 #include "wav_decode.h"
+#include "ym2608_decode.h"
 
 // application
 #include "s44rasp.h"
