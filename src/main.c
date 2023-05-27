@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <alsa/asoundlib.h>
+#include "adpcm_decode.h"
+#include "raw_decode.h"
+#include "wav_decode.h"
 #include "s44rasp.h"
 
 #define ALSA_SOFT_RESAMPLE (1)
@@ -16,13 +19,21 @@ static void show_help_message() {
 
 int32_t main(int32_t argc, uint8_t* argv[]) {
 
+  // default exit code
   int32_t rc = -1;
 
+  // pcm attribs
   snd_pcm_t* pcm_handle = NULL;
   int16_t* pcm_buffer = NULL; 
   uint8_t* pcm_file_name = NULL;
   uint8_t* pcm_device_name = NULL;
   FILE* fp = NULL;
+
+  // decoders
+  ADPCM_DECODE_HANDLE adpcm_decoder = { 0 };
+  RAW_DECODE_HANDLE raw_decoder = { 0 };
+  WAV_DECODE_HANDLE wav_decoder = { 0 };
+//  YM2608_DECODE_HANDLE ym2608_decoder = { 0 };
 
   printf("s44rasp - X68k ADPCM/PCM/WAV player for Raspberry Pi version " PROGRAM_VERSION " by tantan\n");
 
@@ -118,17 +129,11 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     goto exit;
   }
 
-  // decoders
-  ADPCM_DECODE_HANDLE adpcm_decoder = { 0 };
-  RAW_DECODE_HANDLE raw_decoder = { 0 };
-  WAV_DECODE_HANDLE wav_decoder = { 0 };
-//  YM2608_DECODE_HANDLE ym2608_decoder = { 0 };
-
   // init adpcm (msm6258v) decoder
   if (input_format == FORMAT_ADPCM) {
     if (adpcm_decode_init(&adpcm_decoder) != 0) {
       printf("error: ADPCM encoder initialization error.\n");
-      goto catch;
+      goto exit;
     }
   }
 
@@ -136,7 +141,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   if (input_format == FORMAT_RAW) {
     if (raw_decode_init(&raw_decoder, pcm_freq, pcm_channels) != 0) {
       printf("error: PCM decoder initialization error.\n");
-      goto catch;
+      goto exit;
     }
   }
 
@@ -144,7 +149,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   if (input_format == FORMAT_WAV) {
     if (wav_decode_init(&wav_decoder) != 0) {
       printf("error: WAV decoder initialization error.\n");
-      goto catch;
+      goto exit;
     }
   }
 
@@ -152,7 +157,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
 //  if (input_format == FORMAT_YM2608) {
 //    if (ym2608_decode_init(&ym2608_decoder, pcm_freq * pcm_channels * 4, pcm_freq, pcm_channels) != 0) {
 //      printf("error: YM2608 adpcm decoder initialization error.\n");
-//      goto catch;
+//      goto exit;
 //    }
 //  }
 
@@ -256,8 +261,11 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   getchar();
 
   rc = 0;
-  
- exit:
+
+catch:
+
+
+exit:
 
   if (fp != NULL) {
     fclose(fp);
