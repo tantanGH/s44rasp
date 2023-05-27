@@ -36,13 +36,7 @@ static inline int16_t msm6258v_decode(uint8_t code, int16_t* step_index, int16_t
   }
     
   int16_t estimate = last_data + delta;
-  if (estimate > 2047) {
-    estimate = 2047;
-  }
-
-  if (estimate < -2048) {
-    estimate = -2048;
-  }
+  estimate = (estimate > 2047) ? 2047 : (estimate < -2048) ? -2048 : estimate;
 
   si += step_adjust[ code ];
   if (si < 0) {

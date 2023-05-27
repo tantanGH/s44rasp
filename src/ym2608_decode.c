@@ -7,6 +7,7 @@
 //  MSM6258V ADPCM constant tables
 //
 static const int16_t step_adjust[] = { -1, -1, -1, -1, 2, 4, 6, 8, -1, -1, -1, -1, 2, 4, 6, 8 };
+//static const int16_t step_adjust[] = { 57, 57, 57, 57, 77, 102, 128, 153, 57, 57, 57, 57, 77, 102, 128, 153 };
 
 static const int16_t step_size[] = { 
          16,   17,   19,   21,   23,   25,   28,   31,   34,   37,   41,   45,   50,   55,   60,   66,
@@ -14,7 +15,7 @@ static const int16_t step_size[] = {
 //      337,  371,  408,  449,  494,  544,  598,  658,  724,  796,  876,  963, 1060, 1166, 1282, 1411, 1552 };    // oki adpcm
         337,  371,  408,  449,  494,  544,  598,  658,  724,  796,  875,  963, 1060, 1166, 1282, 1411,
        1552, 1707, 1877, 2065, 2272, 2499, 2749, 3023, 3325, 3657, 4022, 4424, 4866, 5352, 5887, 6475,
-       7122, 7834, 8617, 9478, 10425, 32 };
+       7122, 7834, 8617, 9478, 10425 };
 
 //
 //  YM2608 ADPCM decode
@@ -39,20 +40,14 @@ static inline int16_t ym2608_decode(uint8_t code, int16_t* step_index, int16_t l
   }
     
   int16_t estimate = last_data + delta;
-  if (estimate > 32767) {
-    estimate = 32767;
-  }
-
-  if (estimate < -32768) {
-    estimate = -32768;
-  }
+  estimate = (estimate > 32767) ? 32767 : (estimate < -32768) ? -32768 : estimate;
 
   si += step_adjust[ code ];
   if (si < 0) {
     si = 0;
   }
-  if (si > 69) {
-    si = 69;
+  if (si > 68) {
+    si = 68;
   }
   *step_index = si;
 
@@ -101,10 +96,12 @@ int32_t ym2608_decode_open(YM2608_DECODE_HANDLE* ym2608, int32_t sample_rate, in
   ym2608->sample_rate = sample_rate;
   ym2608->channels = channels;
 
-  ym2608->step_index = 0;
+  ym2608->step_size = 127;
+  ym2608->step_index = 32;
   ym2608->last_estimate = 0;
 
-  ym2608->step_index2 = 0;
+  ym2608->step_size2 = 127;
+  ym2608->step_index2 = 32;
   ym2608->last_estimate2 = 0;
 
   ym2608->adpcm_counter = 0;
