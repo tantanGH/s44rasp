@@ -41,7 +41,7 @@ int32_t oled_ssd1306_open(OLED_SSD1306* ssd1306, int16_t width, int16_t height) 
 			0x00, 0xAF,           // display on
 	};
 
-	rc = i2cWriteDevice(handle, init_commands, sizeof(init_commands));
+	rc = i2cWriteDevice(ssd1306->handle, init_commands, sizeof(init_commands));
   if (rc != 0) {
     printf("error: i2c init device error.\n");
     goto exit;
