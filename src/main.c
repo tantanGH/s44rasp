@@ -254,6 +254,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   // allocate pcm buffer
   size_t pcm_buffer_len = pcm_freq < 44100 ? 48000 * 1 : pcm_freq * 1; // 1 sec
   pcm_buffer = (int16_t*)malloc(sizeof(int16_t) * 2 * pcm_buffer_len);    // 16bit & stereo ... fixed
+  printf("pcm_buffer_len = %d\n", pcm_buffer_len);
 
   // allocate file read buffer
   size_t fread_buffer_len = input_format == FORMAT_ADPCM ? 15625 : pcm_channels * pcm_buffer_len;
