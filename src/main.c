@@ -231,8 +231,8 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
 //  snd_pcm_hw_params_get_period_size(pcm_params, &num_frames, NULL);
 //  fprintf(stderr,"# frames in a period: %d\n", num_frames);
 
-  size_t pcm_buffer_len = num_frames * pcm_channels; //pcm_freq * pcm_channels * 2;
-  pcm_buffer = malloc(sizeof(int16_t) * pcm_buffer_len);
+  size_t pcm_buffer_len = pcm_freq;
+  pcm_buffer = malloc(sizeof(int16_t) * pcm_channels * pcm_buffer_len);
   fp = fopen(pcm_file_name, "rb");
   if (fp == NULL) {
     printf("error: s44 file open error.\n");
@@ -300,7 +300,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   size_t fread_len = 0;
   size_t fread_buffer_len = pcm_buffer_len;
   do {
-    size_t len = fread(pcm_buffer, sizeof(int16_t), fread_buffer_len, fp);
+    size_t len = fread(pcm_buffer, sizeof(int16_t) * pcm_channels, fread_buffer_len, fp);
     if (len <= 0) break;
     fread_len += len;
     if (input_format == FORMAT_RAW) {
@@ -311,15 +311,14 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
         pcm_buffer_uint8[ i * 2 + 1 ] = c;
       }
     }
-    num_frames = len / pcm_channels;
-    if ((alsa_rc = snd_pcm_writei(pcm_handle, (const void*)pcm_buffer, num_frames)) < 0) {    
+    if ((alsa_rc = snd_pcm_writei(pcm_handle, (const void*)pcm_buffer, len)) < 0) {    
       if (snd_pcm_recover(pcm_handle, alsa_rc, 0) < 0) {
         printf("error: fatal pcm data write error.\n");
         goto exit;
       }
     }
     printf(".\n");
-  } while (fread_len * sizeof(int16_t) < pcm_data_size);
+  } while (fread_len * sizeof(int16_t) * pcm_channels < pcm_data_size);
 
   fclose(fp);
   fp = NULL;
