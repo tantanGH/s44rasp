@@ -91,7 +91,7 @@ static uint8_t msm6258v_encode(int16_t current_data, int16_t last_estimate, int1
 //
 //  initialize adpcm decoder handle
 //
-int32_t adpcm_decode_init(ADPCM_DECODE_HANDLE* adpcm) {
+int32_t adpcm_decode_open(ADPCM_DECODE_HANDLE* adpcm) {
 
   int32_t rc = -1;
 

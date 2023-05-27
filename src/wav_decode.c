@@ -6,7 +6,7 @@
 //
 //  init wav decoder handle
 //
-int32_t wav_decode_init(WAV_DECODE_HANDLE* wav) {
+int32_t wav_decode_open(WAV_DECODE_HANDLE* wav) {
 
   int32_t rc = -1;
 
@@ -16,8 +16,6 @@ int32_t wav_decode_init(WAV_DECODE_HANDLE* wav) {
   wav->block_align = -1;
   wav->bits_per_sample = -1;
   wav->duration = -1;
-
-  wav->resample_counter = 0;
  
   rc = 0;
 
@@ -190,99 +188,9 @@ exit:
 }
 
 //
-//  resampling with endian conversion
+//  ALSA format is little endian, so data copy only actually
 //
-size_t wav_decode_resample(WAV_DECODE_HANDLE* wav, int16_t* resample_buffer, int32_t resample_freq, int16_t* source_buffer, size_t source_buffer_len, int16_t gain) {
-
-  // resampling
-  size_t source_buffer_ofs = 0;
-  size_t resample_buffer_ofs = 0;
-  
-  if (wav->channels == 2) {
-
-    while (source_buffer_ofs < source_buffer_len) {
-    
-      // down sampling
-      wav->resample_counter += resample_freq;
-      if (wav->resample_counter < wav->sample_rate) {
-        source_buffer_ofs += wav->channels;     // skip
-        continue;
-      }
-
-      wav->resample_counter -= wav->sample_rate;
-    
-      // little endian
-      uint8_t* source_buffer_uint8 = (uint8_t*)(&(source_buffer[ source_buffer_ofs ]));
-      int16_t lch = (int16_t)(source_buffer_uint8[0] + source_buffer_uint8[1] * 256);
-      int16_t rch = (int16_t)(source_buffer_uint8[2] + source_buffer_uint8[3] * 256);
-      int16_t x = ((int32_t)(lch + rch)) / 2 / gain;
-      resample_buffer[ resample_buffer_ofs++ ] = x;
-      source_buffer_ofs += 2;
-
-    }
-
-  } else {
-
-    while (source_buffer_ofs < source_buffer_len) {
-  
-      // down sampling
-      wav->resample_counter += resample_freq;
-      if (wav->resample_counter < wav->sample_rate) {
-        source_buffer_ofs += wav->channels;     // skip
-        continue;
-      }
-
-      wav->resample_counter -= wav->sample_rate;
-
-      // little endian
-      uint8_t* source_buffer_uint8 = (uint8_t*)(&(source_buffer[ source_buffer_ofs ]));
-      int16_t mch = (int16_t)(source_buffer_uint8[1] * 256 + source_buffer_uint8[0]);
-      resample_buffer[ resample_buffer_ofs++ ] = mch / gain;
-      source_buffer_ofs += 1;
-
-    }
-
-  }
-
-  return resample_buffer_ofs;
-}
-
-//
-//  endian conversion only
-//
-size_t wav_decode_convert_endian(WAV_DECODE_HANDLE* wav, int16_t* resample_buffer, int16_t* source_buffer, size_t source_buffer_len) {
-
-  // resampling
-  size_t source_buffer_ofs = 0;
-  size_t resample_buffer_ofs = 0;
-  
-  if (wav->channels == 2) {
-  
-    while (source_buffer_ofs < source_buffer_len) {
-    
-      // little endian
-      uint8_t* source_buffer_uint8 = (uint8_t*)(&(source_buffer[ source_buffer_ofs ]));
-      int16_t lch = (int16_t)(source_buffer_uint8[1] * 256 + source_buffer_uint8[0]);
-      int16_t rch = (int16_t)(source_buffer_uint8[3] * 256 + source_buffer_uint8[2]);
-      resample_buffer[ resample_buffer_ofs++ ] = lch;
-      resample_buffer[ resample_buffer_ofs++ ] = rch;
-      source_buffer_ofs += 2;
-
-    }
-
-  } else {
-
-    while (source_buffer_ofs < source_buffer_len) {
-  
-      // little endian
-      uint8_t* source_buffer_uint8 = (uint8_t*)(&(source_buffer[ source_buffer_ofs ]));
-      int16_t mch = (int16_t)(source_buffer_uint8[1] * 256 + source_buffer_uint8[0]);
-      resample_buffer[ resample_buffer_ofs++ ] = mch;
-      source_buffer_ofs += 1;
-
-    }
-
-  }
-
-  return resample_buffer_ofs;
+size_t wav_decode_exec(WAV_DECODE_HANDLE* wav, int16_t* output_buffer, int16_t* source_buffer, size_t source_buffer_len) {
+  memcpy(output_buffer, source_buffer, source_buffer_len * sizeof(int16_t));
+  return source_buffer_len;
 }

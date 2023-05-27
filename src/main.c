@@ -16,8 +16,9 @@
 static void show_help_message() {
   printf("usage: s44rasp [options] <input-file[.pcm|.sXX|.mXX|.aXX|.nXX|.wav]>\n");
   printf("options:\n");
-  printf("     -d <device>  ... ALSA PCM device name (i.e. hw:3,0)\n");
-  printf("     -l <latency> ... ALSA PCM latency in msec (default:100ms)\n");
+  printf("     -d <alsa-device>    ... ALSA PCM device name (i.e. hw:3,0)\n");
+  printf("     -s <serial-device>  ... serial device name (i.e. /dev/serial0)\n");
+  printf("     -l <latency>        ... ALSA PCM latency in msec (default:100ms)\n");
 //  printf("     -f           ... supported format check\n");
   printf("     -h           ... show help message\n");
 }
@@ -146,7 +147,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
 
   // init adpcm (msm6258v) decoder
   if (input_format == FORMAT_ADPCM) {
-    if (adpcm_decode_init(&adpcm_decoder) != 0) {
+    if (adpcm_decode_open(&adpcm_decoder) != 0) {
       printf("error: ADPCM encoder initialization error.\n");
       goto exit;
     }
@@ -154,7 +155,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
 
   // init raw pcm decoder if needed
   if (input_format == FORMAT_RAW) {
-    if (raw_decode_init(&raw_decoder, pcm_freq, pcm_channels) != 0) {
+    if (raw_decode_open(&raw_decoder, pcm_freq, pcm_channels) != 0) {
       printf("error: PCM decoder initialization error.\n");
       goto exit;
     }
@@ -162,7 +163,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
 
   // init wav decoder if needed
   if (input_format == FORMAT_WAV) {
-    if (wav_decode_init(&wav_decoder) != 0) {
+    if (wav_decode_open(&wav_decoder) != 0) {
       printf("error: WAV decoder initialization error.\n");
       goto exit;
     }
@@ -304,21 +305,43 @@ catch:
 
 exit:
 
+  // close input file handle
   if (fp != NULL) {
     fclose(fp);
     fp = NULL;
   }
 
+  // close alsa device
   if (pcm_handle != NULL) {
     snd_pcm_close(pcm_handle);
     pcm_handle = NULL;
   }
 
+  // reclaim pcm buffer
   if (pcm_buffer != NULL) {
     free(pcm_buffer);
     pcm_buffer = NULL;
   }
 
-  
+  // close adpcm encoder
+  if (input_format == FORMAT_ADPCM) {
+    adpcm_decode_close(&adpcm_decoder);
+  }
+
+  // close raw decoder
+  if (input_format == FORMAT_RAW) {
+    raw_decode_close(&raw_decoder);
+  }
+
+  // close wav decoder
+  if (input_format == FORMAT_WAV) {
+    wav_decode_close(&wav_decoder);
+  }
+
+  // close ym2608 decoder
+//  if (input_format == FORMAT_YM2608) {
+//    ym2608_decode_close(&ym2608_decoder);
+//  }
+
   return rc;
 }
