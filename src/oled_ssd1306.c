@@ -19,7 +19,7 @@ int32_t oled_ssd1306_open(OLED_SSD1306* ssd1306, int16_t width, int16_t height) 
   
   // open i2c connection
   ssd1306->handle = open(OLED_I2C_BUS, O_RDWR);
-  if (ssd->handle < 0) {
+  if (ssd1306->handle < 0) {
     printf("error: failed to open i2c bus.\n");
     goto exit;
   }
