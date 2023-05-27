@@ -230,7 +230,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
 
   // describe playback drivers
   printf("PCM driver    : %s\n", "ALSA");
-  printf("PCM device    : %s\n", pcm_device_name);
+  printf("PCM device    : %s\n", pcm_device_name != NULL ? pcm_device_name : "default");
 
   if (input_format == FORMAT_ADPCM) {
     float pcm_1sec_size = pcm_freq * 0.5;
@@ -345,7 +345,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
           goto exit;
         }
       }
-      printf("\r%d/%d (%4.2f%%)", fread_len, pcm_data_size, fread_len * 100.0 / pcm_data_size);
+      printf("\r%d/%d (%4.2f%%)", fread_len * sizeof(int16_t), pcm_data_size, fread_len * 100.0 / pcm_data_size);
       fflush(stdout);
     } while (fread_len * sizeof(int16_t) < pcm_data_size && abort_flag == 0);
   }
