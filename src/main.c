@@ -291,7 +291,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
       printf("error: OLED SSD1306 device init error.\n");
       goto exit;
     }
-    oled_ssd1306_print(&ssd1306,0,0,"Hello, X68000");
+    oled_ssd1306_print(&ssd1306,0,0,"0123456789ABCDEFabcdef");
   }
 
   // sigint handler
