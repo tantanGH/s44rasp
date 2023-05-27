@@ -29,6 +29,8 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
 
   // pcm attribs
   snd_pcm_t* pcm_handle = NULL;
+  snd_pcm_hw_params_t* pcm_params = NULL;
+  snd_pcm_uframes_t num_frames = 0;
   int16_t* pcm_buffer = NULL; 
   uint8_t* pcm_file_name = NULL;
   uint8_t* pcm_device_name = NULL;
@@ -211,14 +213,25 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     goto exit;
   }
 
-  // set ASLA PCM parameters
-  if ((alsa_rc = snd_pcm_set_params(pcm_handle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, 
-                          pcm_channels, pcm_freq, ALSA_SOFT_RESAMPLE, pcm_latency)) != 0) {
-    printf("error: pcm device setting error. (%s)\n", snd_strerror(alsa_rc));
-    goto exit;
-  }
+  // set ALSA PCM parameters
+  snd_pcm_hw_params_alloca(&pcm_params);
+  snd_pcm_hw_params_any(pcm_handle, params);
+  snd_pcm_hw_params_set_access(pcm_handle, params, SND_PCM_ACCESS_RW_INTERLEAVED);
+  snd_pcm_hw_params_set_format(pcm_handle, params, SND_PCM_FORMAT_S16_LE);
+  snd_pcm_hw_params_set_channels(pcm_handle, params, pcm_channels);
+  snd_pcm_hw_params_set_rate(pcm_handle, params, pcm_freq, 0);
+  snd_pcm_hw_params(pcm_handle, params);
+//  if ((alsa_rc = snd_pcm_set_params(pcm_handle, SND_PCM_FORMAT_S16, SND_PCM_ACCESS_RW_INTERLEAVED, 
+//                          pcm_channels, pcm_freq, ALSA_SOFT_RESAMPLE, pcm_latency)) != 0) {
+//    printf("error: pcm device setting error. (%s)\n", snd_strerror(alsa_rc));
+//    goto exit;
+//  }
 
-  size_t pcm_buffer_len = pcm_freq * pcm_channels * 2;
+  /* Allocate buffer to hold single period */
+  snd_pcm_hw_params_get_period_size(params, &num_frames, NULL);
+  fprintf(stderr,"# frames in a period: %d\n", num_frames);
+
+  size_t pcm_buffer_len = num_frames * pcm_channels * sizeof(int16_t); //pcm_freq * pcm_channels * 2;
   pcm_buffer = malloc(sizeof(int16_t) * pcm_buffer_len);
   fp = fopen(pcm_file_name, "rb");
   if (fp == NULL) {
@@ -296,7 +309,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
       pcm_buffer_uint8[ i * 2 + 0 ] = pcm_buffer_uint8[ i * 2 + 1 ]; 
       pcm_buffer_uint8[ i * 2 + 1 ] = c;
     }
-    snd_pcm_uframes_t num_frames = len / pcm_channels;
+    num_frames = len / pcm_channels;
     if ((alsa_rc = snd_pcm_writei(pcm_handle, (const void*)pcm_buffer, num_frames)) < 0) {    
       if (snd_pcm_recover(pcm_handle, alsa_rc, 0) < 0) {
         printf("error: fatal pcm data write error.\n");
