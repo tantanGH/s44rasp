@@ -192,6 +192,7 @@ exit:
 //
 size_t wav_decode_exec(WAV_DECODE_HANDLE* wav, int16_t* output_buffer, int16_t* source_buffer, size_t source_buffer_len) {
 
+  size_t source_buffer_ofs = 0;
   size_t output_buffer_ofs = 0;
 
   if (wav->channels == 1) {
