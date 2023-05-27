@@ -24,7 +24,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   uint8_t* pcm_device_name = NULL;
   FILE* fp = NULL;
 
-  printf("s44rasp - X68k ADPCM/PCM/WAV player for Raspberry Pi version " PROGRAM_VERSION " by tantan");
+  printf("s44rasp - X68k ADPCM/PCM/WAV player for Raspberry Pi version " PROGRAM_VERSION " by tantan\n");
 
   for (int16_t i = 1; i < argc; i++) {
     if (argv[i][0] == '-' && strlen(argv[i]) >= 2) {
@@ -138,6 +138,49 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     goto exit;
   }
 
+  fseek(fp, 0, SEEK_END);
+  size_t pcm_data_size = ftell(fp);
+  fseek(fp, 0, SEEK_SET);
+
+  printf("File name     : %s\n", pcm_file_name);
+  printf("Data size     : %d [bytes]\n", pcm_data_size);
+  printf("Data format   : %s\n", 
+    input_format == FORMAT_WAV ? "WAV" :
+    input_format == FORMAT_YM2608 ? "ADPCM(YM2608)" :
+    input_format == FORMAT_RAW ? "16bit signed raw PCM (big)" : 
+    "ADPCM(MSM6258V)");
+
+  // describe playback drivers
+  printf("PCM driver    : %s\n",
+    "ALSA");
+
+  if (input_format == FORMAT_ADPCM) {
+    float pcm_1sec_size = pcm_freq * 0.5;
+    printf("PCM frequency : %d [Hz]\n", pcm_freq);
+    printf("PCM channels  : %s\n", "mono");
+    printf("PCM length    : %4.2f [sec]\n", (float)pcm_data_size / pcm_1sec_size);
+  }
+
+  if (input_format == FORMAT_RAW) {
+    float pcm_1sec_size = pcm_freq * 2;
+    printf("PCM frequency : %d [Hz]\n", pcm_freq);
+    printf("PCM channels  : %s\n", pcm_channels == 1 ? "mono" : "stereo");
+    printf("PCM length    : %4.2f [sec]\n", (float)pcm_data_size / pcm_channels / pcm_1sec_size);
+  }
+
+  if (input_format == FORMAT_YM2608) {
+    float pcm_1sec_size = pcm_freq * 0.5;
+    printf("PCM frequency : %d [Hz]\n", pcm_freq);
+    printf("PCM channels  : %s\n", pcm_channels == 1 ? "mono" : "stereo");
+    printf("PCM length    : %4.2f [sec]\n", (float)pcm_data_size / pcm_channels / pcm_1sec_size);
+  }
+
+  if (input_format == FORMAT_WAV) {
+    printf("PCM frequency : %d [Hz]\n", pcm_freq);
+    printf("PCM channels  : %s\n", pcm_channels == 1 ? "mono" : "stereo");
+    printf("PCM length    : %4.2f [sec]\n", (float)wav_decoder.duration / pcm_freq);
+  }
+
   size_t fread_len = fread(pcm_buffer, sizeof(int16_t), pcm_buffer_len, fp);
   uint8_t* pcm_buffer_uint8 = (uint8_t*)pcm_buffer;
   for (size_t i = 0; i < fread_len; i++) {
@@ -145,13 +188,18 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     pcm_buffer_uint8[ i * 2 + 0 ] = pcm_buffer_uint8[ i * 2 + 1]; 
     pcm_buffer_uint8[ i * 2 + 1 ] = c;
   }
-  snd_pcm_writei(pcm_handle, (const void*)pcm_buffer, fread_len);
+  if (snd_pcm_writei(pcm_handle, (const void*)pcm_buffer, fread_len) != 0) {
+    printf("error: pcm device write error.\n");
+    goto exit;
+  }
   
   fclose(fp);
   fp = NULL;
 
   snd_pcm_drain(pcm_handle);
-  
+
+  getchar();
+
   rc = 0;
   
  exit:
