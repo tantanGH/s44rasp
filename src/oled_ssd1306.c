@@ -66,6 +66,12 @@ int32_t oled_ssd1306_open(OLED_SSD1306* ssd1306) {
     write(ssd1306->handle, clear_data, sizeof(clear_data));
   }
 
+	write(ssd1306->handle, clear_commands, sizeof(clear_commands));
+  uint8_t line_data[] = { 0x40, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, };
+  for (int16_t i = 0; i < 8; i++) {
+    write(ssd1306->handle, line_data, sizeof(line_data));
+  }
+
   write(ssd1306->handle, { 0x80, 0xAF }, 2);    // display on
 
   rc = 0;
