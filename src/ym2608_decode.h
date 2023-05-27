@@ -13,6 +13,9 @@ typedef struct {
   int16_t step_index;
   int16_t last_estimate;
 
+  int16_t step_index2;
+  int16_t last_estimate2;
+
   size_t adpcm_counter;
 
   int32_t resample_rate;
