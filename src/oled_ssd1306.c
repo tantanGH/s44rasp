@@ -50,7 +50,7 @@ int32_t oled_ssd1306_open(OLED_SSD1306* ssd1306) {
     0x22, 0x00, 0x07,     // page range
     0xD3, 0x00,           // display offset 0
     0xDA, 0x12,           // com pin hw config
-    0xAF,                 // display on
+//    0xAF,                 // display on
   };
 	write(ssd1306->handle, init_commands, sizeof(init_commands));
 
@@ -65,6 +65,8 @@ int32_t oled_ssd1306_open(OLED_SSD1306* ssd1306) {
   for (int16_t i = 0; i < ssd1306->height; i++) {
     write(ssd1306->handle, clear_data, sizeof(clear_data));
   }
+
+  write(ssd1306->handle, { 0x80, 0xAF }, 2);    // display on
 
   rc = 0;
 
