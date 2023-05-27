@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <alsa/asoundlib.h>
+#include "s44rasp.h"
 
 #define ALSA_SOFT_RESAMPLE (1)
 #define ALSA_LATENCY       (50000)
@@ -22,6 +23,8 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   uint8_t* pcm_file_name = NULL;
   uint8_t* pcm_device_name = NULL;
   FILE* fp = NULL;
+
+  printf("s44rasp - X68k ADPCM/PCM/WAV player for Raspberry Pi version " + PROGRAM_VERSION +" by tantan");
 
   for (int16_t i = 1; i < argc; i++) {
     if (argv[i][0] == '-' && strlen(argv[i]) >= 2) {
@@ -49,15 +52,77 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     goto exit;
   }
 
-  if (snd_pcm_open(&pcm_handle, pcm_device_name != NULL ? pcm_device_name : (uint8_t*)"default", 
-                    SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK) != 0) {
-    printf("error: pcm device open error.\n");
+  // input format check
+  int16_t input_format = FORMAT_ADPCM;
+  int32_t pcm_freq = 15625;
+  int16_t pcm_channels = 1;
+  if (stricmp(".pcm", pcm_file_exp) == 0) {
+    input_format = FORMAT_ADPCM;
+    pcm_freq = 15625;                 // fixed
+    pcm_channels = 1;
+  } else if (stricmp(".s32", pcm_file_exp) == 0) {
+    input_format = FORMAT_RAW;
+    pcm_freq = 32000;
+    pcm_channels = 2;
+  } else if (stricmp(".s44", pcm_file_exp) == 0) {
+    input_format = FORMAT_RAW;
+    pcm_freq = 44100;
+    pcm_channels = 2;
+  } else if (stricmp(".s48", pcm_file_exp) == 0) {
+    input_format = FORMAT_RAW;
+    pcm_freq = 48000;
+    pcm_channels = 2;
+  } else if (stricmp(".m32", pcm_file_exp) == 0) {
+    input_format = FORMAT_RAW;
+    pcm_freq = 32000;
+    pcm_channels = 1;
+  } else if (stricmp(".m44", pcm_file_exp) == 0) {
+    input_format = FORMAT_RAW;
+    pcm_freq = 44100;
+    pcm_channels = 1;
+  } else if (stricmp(".m48", pcm_file_exp) == 0) {
+    input_format = FORMAT_RAW;
+    pcm_freq = 48000;
+    pcm_channels = 1;
+  } else if (stricmp(".a32", pcm_file_exp) == 0) {
+    input_format = FORMAT_YM2608;
+    pcm_freq = 32000;
+    pcm_channels = 2;
+  } else if (stricmp(".a44", pcm_file_exp) == 0) {
+    input_format = FORMAT_YM2608;
+    pcm_freq = 44100;
+    pcm_channels = 2;
+  } else if (stricmp(".a48", pcm_file_exp) == 0) {
+    input_format = FORMAT_YM2608;
+    pcm_freq = 48000;
+    pcm_channels = 2;
+  } else if (stricmp(".n32", pcm_file_exp) == 0) {
+    input_format = FORMAT_YM2608;
+    pcm_freq = 32000;
+    pcm_channels = 1;
+  } else if (stricmp(".n44", pcm_file_exp) == 0) {
+    input_format = FORMAT_YM2608;
+    pcm_freq = 44100;
+    pcm_channels = 1;
+  } else if (stricmp(".n48", pcm_file_exp) == 0) {
+    input_format = FORMAT_YM2608;
+    pcm_freq = 48000;
+    pcm_channels = 1;
+  } else if (stricmp(".wav", pcm_file_exp) == 0) {
+    input_format = FORMAT_WAV;
+    pcm_freq = -1;        // not yet determined
+    pcm_channels = -1;    // not yet determined
+  } else {
+    printf("error: unknown format file (%s).\n", pcm_file_name);
     goto exit;
   }
 
-  int16_t pcm_channels = 2;
-  int32_t pcm_freq = 44100;
-  
+  if (snd_pcm_open(&pcm_handle, pcm_device_name != NULL ? pcm_device_name : (uint8_t*)"default", 
+                    SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK) != 0) {
+    printf("error: pcm device (%s) open error.\n", pcm_device_name);
+    goto exit;
+  }
+
   if (snd_pcm_set_params(pcm_handle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, 
                           pcm_channels, pcm_freq, ALSA_SOFT_RESAMPLE, ALSA_LATENCY) != 0) {
     printf("error: pcm device setting error.\n");
@@ -66,7 +131,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
 
   size_t pcm_buffer_len = pcm_freq * pcm_channels * 30;
   pcm_buffer = malloc(sizeof(int16_t) * pcm_buffer_len);
-  fp = fopen("01.s44", "rb");
+  fp = fopen(pcm_file_name, "rb");
   if (fp == NULL) {
     printf("error: s44 file open error.\n");
     goto exit;
