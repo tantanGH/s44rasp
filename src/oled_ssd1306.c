@@ -210,8 +210,8 @@ void oled_ssd1306_print(OLED_SSD1306* ssd1306, int16_t pos_x, int16_t pos_y, uin
 
   uint8_t data[7];
   data[0] = 0x40;
-  memcpy(data+1, font6x8_data + 6 * (mes[i] - 0x20), 6);
   for (int16_t i = 0; i < mes_len; i++) {
+    memcpy(data+1, font6x8_data + 6 * (mes[i] - 0x20), 6);
     write(ssd1306->handle, data, 7);
   }
   
