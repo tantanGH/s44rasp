@@ -276,8 +276,11 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     goto exit;
   }
 
-  printf("\nnow playing ... push CTRL+C to quit.\n");
+  // sigint handler
   abort_flag = 0;
+  signal(SIGINT, sigint_handler);
+
+  printf("\nnow playing ... push CTRL+C to quit.\n");
 
   if (input_format == FORMAT_ADPCM) {
 
