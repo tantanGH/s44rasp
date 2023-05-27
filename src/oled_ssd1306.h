@@ -1,7 +1,7 @@
 #ifndef __H_SSD1306__
 #define __H_SSD1306__
 
-typedef {
+typedef struct {
 
   int16_t width;
   int16_t height;
