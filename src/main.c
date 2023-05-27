@@ -55,6 +55,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
 
   // oled
   int16_t use_oled = 1;
+  OLED_SSD1306 ssd1306 = { 0 };
 
   // decoders
   ADPCM_DECODE_HANDLE adpcm_decoder = { 0 };
@@ -282,6 +283,14 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
                           (pcm_freq < 44100) ? 48000 : pcm_freq, 1, pcm_latency)) != 0) {
     printf("error: pcm device setting error. (%s)\n", snd_strerror(alsa_rc));
     goto exit;
+  }
+
+  // OLED SSD1306
+  if (use_oled) {
+    if (oled_ssd1306_open(&ssd1306, 128, 64) != 0) {
+      printf("error: OLED SSD1306 device init error.\n");
+      goto exit;
+    }
   }
 
   // sigint handler
