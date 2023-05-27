@@ -8,4 +8,6 @@
 #define FORMAT_WAV    (2)
 #define FORMAT_YM2608 (3)
 
+#define stricmp strcasecmp
+
 #endif

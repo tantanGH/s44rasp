@@ -24,7 +24,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   uint8_t* pcm_device_name = NULL;
   FILE* fp = NULL;
 
-  printf("s44rasp - X68k ADPCM/PCM/WAV player for Raspberry Pi version " + PROGRAM_VERSION +" by tantan");
+  printf("s44rasp - X68k ADPCM/PCM/WAV player for Raspberry Pi version " PROGRAM_VERSION " by tantan");
 
   for (int16_t i = 1; i < argc; i++) {
     if (argv[i][0] == '-' && strlen(argv[i]) >= 2) {
@@ -53,6 +53,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   }
 
   // input format check
+  uint8_t* pcm_file_exp = pcm_file_name + strlen(pcm_file_name) - 4;
   int16_t input_format = FORMAT_ADPCM;
   int32_t pcm_freq = 15625;
   int16_t pcm_channels = 1;
