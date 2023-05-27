@@ -34,7 +34,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   int16_t* pcm_buffer = NULL; 
   uint8_t* pcm_file_name = NULL;
   uint8_t* pcm_device_name = NULL;
-  uint32_t pcm_latency = 100;
+  uint32_t pcm_latency = 50000;
 //  int16_t pcm_format_check = 0;
   int32_t alsa_rc = 0;
   FILE* fp = NULL;
@@ -72,36 +72,6 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
       pcm_file_name = argv[i];
     }
   }
-
-/*
-  if (pcm_format_check) {
-    snd_pcm_hw_params_t* params;
-    snd_pcm_format_mask_t* format_mask;
-    snd_pcm_open(&pcm_handle, pcm_device_name, SND_PCM_STREAM_PLAYBACK, 0);
-    
-    // Allocate and initialize the hardware parameters
-    snd_pcm_hw_params_malloc(&params);
-    snd_pcm_hw_params_any(pcm_handle, params);
-    
-    // Retrieve the format mask
-    snd_pcm_format_mask_malloc(&format_mask);
-    snd_pcm_hw_params_get_format_mask(params, format_mask);
-    
-    // Iterate through the possible formats and check support
-    for (int32_t format = SND_PCM_FORMAT_S8; format <= SND_PCM_FORMAT_FLOAT64; format++) {
-      if (snd_pcm_format_mask_test(format_mask, format)) {
-        printf("Format %s is supported\n", snd_pcm_format_name(format));
-      }
-    }
-    
-    // Cleanup and close the PCM device
-    snd_pcm_format_mask_free(format_mask);
-    snd_pcm_hw_params_free(params);
-    snd_pcm_close(pcm_handle);
-    pcm_handle = NULL;
-    goto exit;
-  }
-*/
 
   if (pcm_file_name == NULL) {
     show_help_message();
@@ -237,7 +207,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   fseek(fp, skip_offset, SEEK_SET);
 
   // allocate pcm buffer
-  size_t pcm_buffer_len = pcm_freq;
+  size_t pcm_buffer_len = pcm_freq * 2; // 2 sec
   pcm_buffer = (int16_t*)malloc(sizeof(int16_t) * pcm_channels * pcm_buffer_len);
 
   // describe PCM file information
@@ -288,13 +258,6 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   }
 
   // set ALSA PCM parameters
-//  snd_pcm_hw_params_alloca(&pcm_params);
-//  snd_pcm_hw_params_any(pcm_handle, pcm_params);
-//  snd_pcm_hw_params_set_access(pcm_handle, pcm_params, SND_PCM_ACCESS_RW_INTERLEAVED);
-//  snd_pcm_hw_params_set_format(pcm_handle, pcm_params, SND_PCM_FORMAT_S16_LE);
-//  snd_pcm_hw_params_set_channels(pcm_handle, pcm_params, pcm_channels);
-//  snd_pcm_hw_params_set_rate(pcm_handle, pcm_params, pcm_freq, 0);
-//  snd_pcm_hw_params(pcm_handle, pcm_params);
   if ((alsa_rc = snd_pcm_set_params(pcm_handle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, 
                           pcm_channels, pcm_freq, 1, pcm_latency)) != 0) {
     printf("error: pcm device setting error. (%s)\n", snd_strerror(alsa_rc));
