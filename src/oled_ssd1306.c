@@ -53,25 +53,20 @@ int32_t oled_ssd1306_open(OLED_SSD1306* ssd1306) {
     0xAF,                 // display on
   };
 	write(ssd1306->handle, init_commands, sizeof(init_commands));
-/*
+
   uint8_t clear_commands[] = {
-    0x00, 0x21, 0x00, ssd1306->width - 1,
-    0x00, 0x22, 0x00, ssd1306->height/8 - 1,
+    0x00,                 // command stream
+    0xb0,                 // set page start address
+    0x21, 0x00, 0x7f,     // column range
     0x40,
   };
 	write(ssd1306->handle, clear_commands, sizeof(clear_commands));
 
-  uint8_t clear_data[ OLED_MAX_WIDTH / 8 ];
-  memset(clear_data, 0, OLED_MAX_WIDTH / 8);
-  for (int16_t i = 0; i < ssd1306->height/8; i++) {
-    write(ssd1306->handle, clear_data, ssd1306->width/8);
+  uint8_t clear_data[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, };
+  for (int16_t i = 0; i < ssd1306->height; i++) {
+    write(ssd1306->handle, clear_data, sizeof(clear_data));
   }
 
-  uint8_t on_commands[] = {
-    0x80, 0xAF,           // display on
-  };
-	write(ssd1306->handle, on_commands, sizeof(on_commands));
-*/
   rc = 0;
 
 exit:
