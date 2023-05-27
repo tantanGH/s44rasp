@@ -271,29 +271,6 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     goto exit;
   }
 
-  // set ALSA PCM parameters (16bit stereo output ... fixed)
-/*
-  snd_pcm_hw_params_malloc(&pcm_params);
-  snd_pcm_hw_params_any(pcm_handle, pcm_params);
-
-  snd_pcm_hw_params_set_access(pcm_handle, pcm_params, SND_PCM_ACCESS_RW_INTERLEAVED);
-  snd_pcm_hw_params_set_format(pcm_handle, pcm_params, SND_PCM_FORMAT_S16_LE);    // 16bit fixed
-  snd_pcm_hw_params_set_channels(pcm_handle, pcm_params, 2);                      // stereo fixed
-
-  if (pcm_freq == 15625 || pcm_freq == 32000) {
-    // in case of 15.6kHz or 32kHz, upscale to 48kHz
-    snd_pcm_hw_params_set_rate(pcm_handle, pcm_params, 48000, 0);
-  } else {
-    // 44.1kHz/48kHz ... through as is
-    snd_pcm_hw_params_set_rate(pcm_handle, pcm_params, pcm_freq, 0);
-  }
-
-  if ((alsa_rc = snd_pcm_hw_params(pcm_handle, pcm_params)) != 0) {
-    printf("error: pcm hw params setting error. (%s)\n", snd_strerror(alsa_rc));
-    goto exit;
-  }
-*/
-
   // in case of 15.6kHz or 32kHz, upscale to 48kHz
   if ((alsa_rc = snd_pcm_set_params(pcm_handle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, 2,
                           (pcm_freq < 44100) ? 48000 : pcm_freq, 1, pcm_latency)) != 0) {
@@ -307,7 +284,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
 
   printf("\nnow playing ... push CTRL+C to quit.\n");
 
-  if (input_format == FORMAT_ADPCM) {
+  if (input_format == FORMAT_ADPCM || input_format == FORMAT_YM2608) {
 
     size_t fread_len = 0;
 
@@ -315,7 +292,13 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
       size_t len = fread(fread_buffer, sizeof(uint8_t), fread_buffer_len, fp);
       if (len == 0) break;
       fread_len += len;
-      size_t decode_len = adpcm_decode_exec(&adpcm_decoder, pcm_buffer, fread_buffer, len);
+      size_t decode_len = 0;
+      if (input_format == FORMAT_ADPCM) {
+        decode_len = adpcm_decode_exec(&adpcm_decoder, pcm_buffer, fread_buffer, len);
+      } else if (input_format == FORMAT_YM2608) {
+        decode_len = ym2608_decode_exec(&adpcm_decoder, pcm_buffer, fread_buffer, len);
+      }
+      printf("decode_len = %d, len = %d\n", decode_len, len);
       if ((alsa_rc = snd_pcm_writei(pcm_handle, (const void*)pcm_buffer, decode_len / 2)) < 0) {    
         if (snd_pcm_recover(pcm_handle, alsa_rc, 0) < 0) {
           printf("error: fatal pcm data write error.\n");
@@ -339,10 +322,8 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
         decode_len = raw_decode_exec(&raw_decoder, pcm_buffer, fread_buffer, len);
       } else if (input_format == FORMAT_WAV) {
         decode_len = wav_decode_exec(&wav_decoder, pcm_buffer, fread_buffer, len);
-      } else if (input_format == FORMAT_YM2608) {
-        decode_len = ym2608_decode_exec(&ym2608_decoder, pcm_buffer, fread_buffer, len);        
       }
-      //printf("decode_len = %d, len = %d\n", decode_len, len);
+//      printf("decode_len = %d, len = %d\n", decode_len, len);
       if ((alsa_rc = snd_pcm_writei(pcm_handle, (const void*)pcm_buffer, decode_len / 2)) < 0) {    
         if (snd_pcm_recover(pcm_handle, alsa_rc, 0) < 0) {
           printf("error: fatal pcm data write error.\n");
