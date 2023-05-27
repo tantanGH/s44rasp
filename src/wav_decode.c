@@ -182,7 +182,7 @@ int32_t wav_decode_parse_header(WAV_DECODE_HANDLE* wav, FILE* fp) {
   wav->duration = (buf[0] + (buf[1]<<8) + (buf[2]<<16) + (buf[3]<<24)) / wav->block_align;
   printf("sub chunk 2 size ok. %d\n", bytes_read);
 
-  rc = bytes_read;
+  rc = (int32_t)bytes_read;
 
 exit:
   return rc;
