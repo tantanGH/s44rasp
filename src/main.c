@@ -194,6 +194,15 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     }
   }
 
+  // initi OLED SSD1306
+  if (use_oled) {
+    if (oled_ssd1306_open(&ssd1306) != 0) {
+      printf("error: OLED SSD1306 device init error.\n");
+      goto exit;
+    }
+    //oled_ssd1306_print(&ssd1306,0,0,"0123456789ABCDEFabcdef");
+  }
+
   // open pcm file
   fp = fopen(pcm_file_name, "rb");
   if (fp == NULL) {
@@ -220,7 +229,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   fseek(fp, skip_offset, SEEK_SET);
 
   if (use_oled) {
-    /*static uint8_t mes[128];
+    static uint8_t mes[128];
     uint8_t* c = strrchr(pcm_file_name, '/');
     sprintf(mes, "FILE NAME: %s", c != NULL ? c+1 : pcm_file_name);
     oled_ssd1306_print(&ssd1306, 0, 0, mes);
@@ -235,7 +244,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     sprintf(mes, "PCM FREQ: %d [Hz]", pcm_freq);
     oled_ssd1306_print(&ssd1306, 0, 3, mes);
     sprintf(mes, "PCM CHANNEL: %s", pcm_channels == 1 ? "mono" : "stereo");
-    oled_ssd1306_print(&ssd1306, 0, 4, mes);*/
+    oled_ssd1306_print(&ssd1306, 0, 4, mes);
     oled_ssd1306_print(&ssd1306, 0, 5, "L:");
     oled_ssd1306_print(&ssd1306, 0, 6, "R:");
   }
@@ -304,15 +313,6 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
                           (pcm_freq < 44100) ? 48000 : pcm_freq, 1, pcm_latency)) != 0) {
     printf("error: pcm device setting error. (%s)\n", snd_strerror(alsa_rc));
     goto exit;
-  }
-
-  // OLED SSD1306
-  if (use_oled) {
-    if (oled_ssd1306_open(&ssd1306) != 0) {
-      printf("error: OLED SSD1306 device init error.\n");
-      goto exit;
-    }
-    //oled_ssd1306_print(&ssd1306,0,0,"0123456789ABCDEFabcdef");
   }
 
   // sigint handler
