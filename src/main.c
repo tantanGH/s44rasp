@@ -18,6 +18,7 @@ static void show_help_message() {
   printf("options:\n");
   printf("     -d <device>  ... ALSA PCM device name (i.e. hw:3,0)\n");
   printf("     -l <latency> ... ALSA PCM latency in msec (default:100ms)\n");
+  printf("     -f           ... supported format check\n");
   printf("     -h           ... show help message\n");
 }
 
@@ -32,6 +33,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   uint8_t* pcm_file_name = NULL;
   uint8_t* pcm_device_name = NULL;
   uint32_t pcm_latency = 100;
+  int16_t pcm_format_check = 0;
   int32_t alsa_rc = 0;
   FILE* fp = NULL;
 
@@ -51,6 +53,8 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
       } else if (argv[i][1] == 'l' && i+1 < argc) {
         pcm_latency = atoi(argv[ i + 1 ]);
         i++;
+      } else if (argv[i][1] == 'f') {
+        pcm_format_check = 1;
       } else if (argv[i][1] == 'h') {
         show_help_message();
         goto exit;
@@ -65,6 +69,33 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
       }
       pcm_file_name = argv[i];
     }
+  }
+
+  if (pcm_format_check) {
+    snd_pcm_hw_params_t* params;
+    snd_pcm_format_mask_t* format_mask;
+    snd_pcm_open(&pcm_handle, pcm_device_name, SND_PCM_STREAM_PLAYBACK, 0);
+    
+    // Allocate and initialize the hardware parameters
+    snd_pcm_hw_params_malloc(&params);
+    snd_pcm_hw_params_any(pcm_handle, params);
+    
+    // Retrieve the format mask
+    snd_pcm_format_mask_malloc(&format_mask);
+    snd_pcm_hw_params_get_format_mask(params, format_mask);
+    
+    // Iterate through the possible formats and check support
+    for (int32_t format = SND_PCM_FORMAT_S8; format <= SND_PCM_FORMAT_FLOAT64; format++) {
+        if (snd_pcm_format_mask_test(format_mask, format)) {
+            printf("Format %s is supported\n", snd_pcm_format_name(format));
+        }
+    }
+    
+    // Cleanup and close the PCM device
+    snd_pcm_format_mask_free(format_mask);
+    snd_pcm_hw_params_free(params);
+    snd_pcm_close(pcm);
+    goto exit;
   }
 
   if (pcm_file_name == NULL) {
