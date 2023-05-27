@@ -16,8 +16,9 @@
 static void show_help_message() {
   printf("usage: s44rasp [options] <input-file[.pcm|.sXX|.mXX|.aXX|.nXX|.wav]>\n");
   printf("options:\n");
-  printf("     -d <device> ... asound PCM device name (i.e. hw:3,0)\n");
-  printf("     -h          ... show help message\n");
+  printf("     -d <device>  ... ALSA PCM device name (i.e. hw:3,0)\n");
+  printf("     -l <latency> ... ALSA PCM latency in msec (default:100ms)\n");
+  printf("     -h           ... show help message\n");
 }
 
 int32_t main(int32_t argc, uint8_t* argv[]) {
@@ -30,6 +31,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   int16_t* pcm_buffer = NULL; 
   uint8_t* pcm_file_name = NULL;
   uint8_t* pcm_device_name = NULL;
+  uint32_t pcm_latency = 100;
   int32_t alsa_rc = 0;
   FILE* fp = NULL;
 
@@ -45,6 +47,9 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     if (argv[i][0] == '-' && strlen(argv[i]) >= 2) {
       if (argv[i][1] == 'd' && i+1 < argc) {
         pcm_device_name = argv[ i + 1 ];
+        i++;
+      } else if (argv[i][1] == 'l' && i+1 < argc) {
+        pcm_latency = atoi(argv[ i + 1 ]);
         i++;
       } else if (argv[i][1] == 'h') {
         show_help_message();
@@ -174,7 +179,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
 
   // set ASLA PCM parameters
   if ((alsa_rc = snd_pcm_set_params(pcm_handle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, 
-                          pcm_channels, pcm_freq, ALSA_SOFT_RESAMPLE, ALSA_LATENCY)) != 0) {
+                          pcm_channels, pcm_freq, ALSA_SOFT_RESAMPLE, pcm_latency)) != 0) {
     printf("error: pcm device setting error. (%s)\n", snd_strerror(alsa_rc));
     goto exit;
   }
