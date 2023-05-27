@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-#include <pigpio.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
+#include <linux/i2c-dev.h>
 #include "oled_ssd1306.h"
 
 //
