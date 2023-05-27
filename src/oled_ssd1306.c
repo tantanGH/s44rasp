@@ -223,16 +223,16 @@ void oled_ssd1306_print(OLED_SSD1306* ssd1306, int16_t pos_x, int16_t pos_y, uin
 //
 void oled_ssd1306_show_meter(OLED_SSD1306* ssd1306, int16_t pos_x, int16_t pos_y, int16_t current_level, int16_t peak_level) {
 
-  static uint8_t commands[] = {
+  uint8_t commands[] = {
     0x00,                 // command stream
     0x21, pos_x, 0x7f,    // column range
     0x22, pos_y, pos_y,   // page range
   };
 	write(ssd1306->handle, commands, sizeof(commands));
 
-  static uint8_t data_on[7]   = { 0x40, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x00, };
-  static uint8_t data_off[7]  = { 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, };
-  static uint8_t data_peak[7] = { 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7f, };
+  uint8_t data_on[7]   = { 0x40, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x00, };
+  uint8_t data_off[7]  = { 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, };
+  uint8_t data_peak[7] = { 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7f, };
 
   int16_t num_cells = ( 128 - pos_x ) / 6;
   int16_t on_cells = current_level < 0 ? num_cells * current_level / -32768 : num_cells * current_level / 32768;
