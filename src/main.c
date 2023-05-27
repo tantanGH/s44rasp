@@ -33,6 +33,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   snd_pcm_hw_params_t* pcm_params = NULL;
   snd_pcm_uframes_t num_frames = 0;
   int16_t* pcm_buffer = NULL; 
+  void* fread_buffer = NULL;
   uint8_t* pcm_file_name = NULL;
   uint8_t* pcm_device_name = NULL;
   uint32_t pcm_latency = 50000;
@@ -86,7 +87,8 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   int16_t pcm_channels = 1;
   if (stricmp(".pcm", pcm_file_exp) == 0) {
     input_format = FORMAT_ADPCM;
-    pcm_freq = 15625;                 // fixed
+    //pcm_freq = 15625;                 // fixed
+    pcm_freq = 48000;                 // resampling rate
     pcm_channels = 1;
   } else if (stricmp(".s32", pcm_file_exp) == 0) {
     input_format = FORMAT_RAW;
@@ -177,10 +179,6 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
 //    }
 //  }
 
-  /* Allocate buffer to hold single period */
-//  snd_pcm_hw_params_get_period_size(pcm_params, &num_frames, NULL);
-//  fprintf(stderr,"# frames in a period: %d\n", num_frames);
-
   // open pcm file
   fp = fopen(pcm_file_name, "rb");
   if (fp == NULL) {
@@ -199,7 +197,6 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     pcm_freq = wav_decoder.sample_rate;
     pcm_channels = wav_decoder.channels;
     skip_offset = ofs;
-    //printf("skip offset = %d\n", ofs);
   }
 
   // check file size
@@ -210,6 +207,11 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   // allocate pcm buffer
   size_t pcm_buffer_len = pcm_freq * 1; // 1 sec
   pcm_buffer = (int16_t*)malloc(sizeof(int16_t) * pcm_channels * pcm_buffer_len);
+
+  // allocate file read buffer
+  size_t fread_buffer_len = input_format == FORMAT_ADPCM ? 15625 : pcm_channels * pcm_buffer_len;
+  fread_buffer = malloc(input_format == FORMAT_ADPCM ? sizeof(uint8_t) * fread_buffer_len :
+                                                       sizeof(int16_t) * fread_buffer_len);
 
   // describe PCM file information
   printf("File name     : %s\n", pcm_file_name);
@@ -265,28 +267,52 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     goto exit;
   }
 
-  size_t fread_len = 0;
-  do {
-    size_t len = fread(pcm_buffer, sizeof(int16_t), pcm_channels * pcm_buffer_len, fp);
-    if (len == 0) break;
-    fread_len += len;
-    if (input_format == FORMAT_RAW) {
-      uint8_t* pcm_buffer_uint8 = (uint8_t*)pcm_buffer;
-      for (size_t i = 0; i < len; i++) {
-        uint8_t c = pcm_buffer_uint8[ i * 2 + 0 ];
-        pcm_buffer_uint8[ i * 2 + 0 ] = pcm_buffer_uint8[ i * 2 + 1 ]; 
-        pcm_buffer_uint8[ i * 2 + 1 ] = c;
+  if (input_format == FORMAT_ADPCM) {
+
+    size_t fread_len = 0;
+
+    do {
+      size_t len = fread(fread_buffer, sizeof(uint8_t), fread_buffer_len, fp);
+      if (len == 0) break;
+      fread_len += len;
+      adpcm_decode_exec(&adpcm_decoder, pcm_buffer, fread_buffer, len);
+      snd_pcm_uframes_t num_frames = len / pcm_channels;
+      if ((alsa_rc = snd_pcm_writei(pcm_handle, (const void*)pcm_buffer, num_frames)) < 0) {    
+        if (snd_pcm_recover(pcm_handle, alsa_rc, 0) < 0) {
+          printf("error: fatal pcm data write error.\n");
+          goto exit;
+        }
       }
-    }
-    snd_pcm_uframes_t num_frames = len / pcm_channels;
-    if ((alsa_rc = snd_pcm_writei(pcm_handle, (const void*)pcm_buffer, num_frames)) < 0) {    
-      if (snd_pcm_recover(pcm_handle, alsa_rc, 0) < 0) {
-        printf("error: fatal pcm data write error.\n");
-        goto exit;
+      printf("%d/%d\n", fread_len, pcm_data_size);
+    } while (fread_len < pcm_data_size);
+
+  } else {
+
+    size_t fread_len = 0;
+
+    do {
+      size_t len = fread(fread_buffer, sizeof(int16_t), fread_buffer_len, fp);
+      if (len == 0) break;
+      fread_len += len;
+      if (input_format == FORMAT_RAW) {
+        raw_decode_exec(&raw_decoder, )
+        uint8_t* pcm_buffer_uint8 = (uint8_t*)pcm_buffer;
+        for (size_t i = 0; i < len; i++) {
+          uint8_t c = pcm_buffer_uint8[ i * 2 + 0 ];
+          pcm_buffer_uint8[ i * 2 + 0 ] = pcm_buffer_uint8[ i * 2 + 1 ]; 
+          pcm_buffer_uint8[ i * 2 + 1 ] = c;
+        }
       }
-    }
-    printf("%d/%d\n", fread_len * 2, pcm_data_size);
-  } while (fread_len * 2 < pcm_data_size);
+      snd_pcm_uframes_t num_frames = len / pcm_channels;
+      if ((alsa_rc = snd_pcm_writei(pcm_handle, (const void*)pcm_buffer, num_frames)) < 0) {    
+        if (snd_pcm_recover(pcm_handle, alsa_rc, 0) < 0) {
+          printf("error: fatal pcm data write error.\n");
+          goto exit;
+        }
+      }
+      printf("%d/%d\n", fread_len * sizeof(int16_t), pcm_data_size);
+    } while (fread_len * sizeof(int16_t) < pcm_data_size);
+  }
 
   fclose(fp);
   fp = NULL;
@@ -321,6 +347,12 @@ exit:
   if (pcm_buffer != NULL) {
     free(pcm_buffer);
     pcm_buffer = NULL;
+  }
+
+  // reclaim file read buffer
+  if (fread_buffer != NULL) {
+    free(fread_buffer);
+    fread_buffer = NULL;
   }
 
   // close adpcm encoder
