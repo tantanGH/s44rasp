@@ -15,7 +15,7 @@ int32_t oled_ssd1306_open(OLED_SSD1306* ssd1306) {
   int32_t rc = -1;
 
   // baseline
-  ssd1306->width = = 128;
+  ssd1306->width = 128;
   ssd1306->height = 64;
   
   // open i2c connection
@@ -45,7 +45,7 @@ int32_t oled_ssd1306_open(OLED_SSD1306* ssd1306) {
     0xA6,                 // set normal display 
     0xD5, 0x80,           // display clock
     0x2E,                 // deactivate scroll
-    0x20, 0x10            // memory addressing mode
+    0x20, 0x10,           // memory addressing mode
     0x21, 0x00, 0x7f,     // column range
     0x22, 0x00, 0x07,     // page range
     0xD3, 0x00,           // display offset 0
