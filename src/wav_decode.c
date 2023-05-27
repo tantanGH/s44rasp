@@ -68,7 +68,8 @@ int32_t wav_decode_parse_header(WAV_DECODE_HANDLE* wav, FILE* fp) {
   if (strcmp(buf, "JUNK") == 0) {
     size_t bytes_junk = fread(buf, sizeof(uint8_t), 4, fp);
     buf[4] = '\0';
-    bytes_junk += buf[0] + (buf[1] << 8) + (buf[2] << 16) + (buf[3] << 24);
+//    bytes_junk += buf[0] + (buf[1] << 8) + (buf[2] << 16) + (buf[3] << 24);
+    bytes_junk += buf[3] + (buf[2] << 8) + (buf[1] << 16) + (buf[0] << 24);
     if (fseek(fp, bytes_read + bytes_junk, SEEK_SET) != 0) {
       printf("error: wav seek error.\n");
       goto exit;
@@ -115,7 +116,8 @@ int32_t wav_decode_parse_header(WAV_DECODE_HANDLE* wav, FILE* fp) {
 
   // SampleRate
   bytes_read += fread(buf, sizeof(uint8_t), 4, fp);
-  wav->sample_rate = buf[0] + (buf[1] << 8) + (buf[2] << 16) + (buf[3] << 24);
+//  wav->sample_rate = buf[0] + (buf[1] << 8) + (buf[2] << 16) + (buf[3] << 24);
+  wav->sample_rate = buf[3] + (buf[2] << 8) + (buf[1] << 16) + (buf[0] << 24);
   if (wav->sample_rate != 32000 && wav->sample_rate != 44100 && wav->sample_rate != 48000) {
     printf("error: wav unsupported sample rate (%d).\n", wav->sample_rate);
     goto exit;
@@ -123,15 +125,18 @@ int32_t wav_decode_parse_header(WAV_DECODE_HANDLE* wav, FILE* fp) {
 
   // ByteRate
   bytes_read += fread(buf, sizeof(uint8_t), 4, fp);
-  wav->byte_rate = buf[0] + (buf[1] <<8) + (buf[2] << 16) + (buf[3] << 24);
+//  wav->byte_rate = buf[0] + (buf[1] <<8) + (buf[2] << 16) + (buf[3] << 24);
+  wav->byte_rate = buf[3] + (buf[2] <<8) + (buf[1] << 16) + (buf[0] << 24);
 
   // BlockAlign
   bytes_read += fread(buf, sizeof(uint8_t), 2, fp);
-  wav->block_align = buf[0] + (buf[1] << 8);
+//  wav->block_align = buf[0] + (buf[1] << 8);
+  wav->block_align = buf[1] + (buf[0] << 8);
 
   // BitsPerSample
   bytes_read += fread(buf, sizeof(uint8_t), 2, fp);
-  wav->bits_per_sample = buf[0] + (buf[1] << 8);
+//  wav->bits_per_sample = buf[0] + (buf[1] << 8);
+  wav->bits_per_sample = buf[1] + (buf[0] << 8);
   if (wav->bits_per_sample != 16) {
     printf("error: wav unsupported bit per sample (%d).\n", wav->bits_per_sample);
     goto exit;
@@ -152,7 +157,8 @@ int32_t wav_decode_parse_header(WAV_DECODE_HANDLE* wav, FILE* fp) {
     }
     size_t bytes_junk = fread(buf, sizeof(uint8_t), 4, fp);
     buf[4] = '\0';
-    bytes_junk += buf[0] + (buf[1] << 8) + (buf[2] << 16) + (buf[3] << 24);
+//    bytes_junk += buf[0] + (buf[1] << 8) + (buf[2] << 16) + (buf[3] << 24);
+    bytes_junk += buf[3] + (buf[2] << 8) + (buf[1] << 16) + (buf[0] << 24);
     if (fseek(fp, bytes_read + bytes_junk, SEEK_SET) != 0) {
       printf("error: wav seek error.\n");
       goto exit;
@@ -165,7 +171,8 @@ int32_t wav_decode_parse_header(WAV_DECODE_HANDLE* wav, FILE* fp) {
 
   // Subchunk2Size
   bytes_read += fread(buf, sizeof(uint8_t), 4, fp);
-  wav->duration = (buf[0] + (buf[1]<<8) + (buf[2]<<16) + (buf[3]<<24)) / wav->block_align;
+//  wav->duration = (buf[0] + (buf[1]<<8) + (buf[2]<<16) + (buf[3]<<24)) / wav->block_align;
+  wav->duration = (buf[3] + (buf[2]<<8) + (buf[1]<<16) + (buf[0]<<24)) / wav->block_align;
 
   rc = bytes_read;
 
