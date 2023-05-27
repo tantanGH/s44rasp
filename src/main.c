@@ -269,18 +269,10 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   }
 
   // set ALSA PCM parameters
-  if (pcm_channels == 1) {
-    if ((alsa_rc = snd_pcm_set_params(pcm_handle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_NONINTERLEAVED, 
-                            pcm_channels, pcm_freq, 1, pcm_latency)) != 0) {
-      printf("error: pcm device setting error. (%s)\n", snd_strerror(alsa_rc));
-      goto exit;
-    }
-  } else {
-    if ((alsa_rc = snd_pcm_set_params(pcm_handle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, 
-                            pcm_channels, pcm_freq, 1, pcm_latency)) != 0) {
-      printf("error: pcm device setting error. (%s)\n", snd_strerror(alsa_rc));
-      goto exit;
-    }
+  if ((alsa_rc = snd_pcm_set_params(pcm_handle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, 
+                          pcm_channels, pcm_freq, 1, pcm_latency)) != 0) {
+    printf("error: pcm device setting error. (%s)\n", snd_strerror(alsa_rc));
+    goto exit;
   }
 
   if (input_format == FORMAT_ADPCM) {
