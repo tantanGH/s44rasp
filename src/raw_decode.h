@@ -10,6 +10,7 @@ typedef struct {
   int32_t sample_rate;
   int16_t channels;
 
+  int32_t resample_freq;
   size_t resample_counter;
 
 } RAW_DECODE_HANDLE;

@@ -252,7 +252,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   }
 
   // allocate pcm buffer
-  size_t pcm_buffer_len = pcm_freq * 1; // 1 sec
+  size_t pcm_buffer_len = pcm_freq < 44100 ? 48000 * 1 : pcm_freq * 1; // 1 sec
   pcm_buffer = (int16_t*)malloc(sizeof(int16_t) * 2 * pcm_buffer_len);    // 16bit & stereo ... fixed
 
   // allocate file read buffer
@@ -275,10 +275,11 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   snd_pcm_hw_params_set_format(pcm_handle, pcm_params, SND_PCM_FORMAT_S16_LE);    // 16bit fixed
   snd_pcm_hw_params_set_channels(pcm_handle, pcm_params, 2);                      // stereo fixed
 
-  if (pcm_freq < 44100) {
-    unsigned int desired_rate = 48000;
-    snd_pcm_hw_params_set_rate_near(pcm_handle, pcm_params, &desired_rate, 0);
+  if (pcm_freq == 15625 || pcm_freq == 32000) {
+    // in case of 15.6kHz or 32kHz, upscale to 48kHz
+    snd_pcm_hw_params_set_rate(pcm_handle, pcm_params, 48000, 0);
   } else {
+    // 44.1kHz/48kHz ... through as is
     snd_pcm_hw_params_set_rate(pcm_handle, pcm_params, pcm_freq, 0);
   }
 
@@ -292,8 +293,6 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
 //    printf("error: pcm device setting error. (%s)\n", snd_strerror(alsa_rc));
 //    goto exit;
 //  }
-
-  snd_pcm_hw_params(pcm_handle, pcm_params);
 
   // sigint handler
   abort_flag = 0;
