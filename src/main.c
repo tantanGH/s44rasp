@@ -253,7 +253,8 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   }
 
   // allocate file read buffer
-  size_t fread_buffer_len = pcm_channels * pcm_freq * 1;    // 1 sec (adpcm=2sec)
+  size_t fread_buffer_len = input_format == FORMAT_YM2608 ? pcm_channels * pcm_freq * 1 / 4 : 
+                                                            pcm_channels * pcm_freq * 1;    // 1 sec (adpcm=2sec)
   fread_buffer = malloc(input_format == FORMAT_ADPCM ? sizeof(uint8_t) * fread_buffer_len :
                                                        sizeof(int16_t) * fread_buffer_len);
   //printf("fread_buffer_len = %d\n", fread_buffer_len);
