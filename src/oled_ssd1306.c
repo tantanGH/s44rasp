@@ -50,9 +50,9 @@ int32_t oled_ssd1306_open(OLED_SSD1306* ssd1306, int16_t width, int16_t height) 
 	write(ssd1306->handle, init_commands, sizeof(init_commands));
 
   uint8_t clear_commands[] = {
-    0x40,
     0x00, 0x21, 0x00, ssd1306->width - 1,
     0x00, 0x22, 0x00, ssd1306->height/8 - 1,
+    0x40,
   };
 	write(ssd1306->handle, clear_commands, sizeof(clear_commands));
 
