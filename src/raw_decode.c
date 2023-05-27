@@ -65,7 +65,7 @@ size_t raw_decode_exec(RAW_DECODE_HANDLE* pcm, int16_t* output_buffer, int16_t* 
 
       }
 
-      output_buffer_len = source_buffer_len * 2;
+      output_buffer_len = output_buffer_ofs / 2;
 
     } else {
 
@@ -86,7 +86,7 @@ size_t raw_decode_exec(RAW_DECODE_HANDLE* pcm, int16_t* output_buffer, int16_t* 
 
       }
 
-      output_buffer_len = source_buffer_len;
+      output_buffer_len = output_buffer_ofs / 2;
 
     }
 
@@ -103,7 +103,7 @@ size_t raw_decode_exec(RAW_DECODE_HANDLE* pcm, int16_t* output_buffer, int16_t* 
         source_buffer_ofs ++;
       }
 
-      output_buffer_len = source_buffer_len * 2;
+      output_buffer_len = output_buffer_ofs / 2;
 
     } else {
 
@@ -114,7 +114,7 @@ size_t raw_decode_exec(RAW_DECODE_HANDLE* pcm, int16_t* output_buffer, int16_t* 
         source_buffer_ofs ++;
       }
 
-      output_buffer_len = source_buffer_len;
+      output_buffer_len = output_buffer_ofs / 2;
 
     }
 
