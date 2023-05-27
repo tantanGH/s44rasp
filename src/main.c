@@ -303,11 +303,13 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     size_t len = fread(pcm_buffer, sizeof(int16_t), fread_buffer_len, fp);
     if (len <= 0) break;
     fread_len += len;
-    uint8_t* pcm_buffer_uint8 = (uint8_t*)pcm_buffer;
-    for (size_t i = 0; i < len; i++) {
-      uint8_t c = pcm_buffer_uint8[ i * 2 + 0 ];
-      pcm_buffer_uint8[ i * 2 + 0 ] = pcm_buffer_uint8[ i * 2 + 1 ]; 
-      pcm_buffer_uint8[ i * 2 + 1 ] = c;
+    if (input_format == FORMAT_RAW) {
+      uint8_t* pcm_buffer_uint8 = (uint8_t*)pcm_buffer;
+      for (size_t i = 0; i < len; i++) {
+        uint8_t c = pcm_buffer_uint8[ i * 2 + 0 ];
+        pcm_buffer_uint8[ i * 2 + 0 ] = pcm_buffer_uint8[ i * 2 + 1 ]; 
+        pcm_buffer_uint8[ i * 2 + 1 ] = c;
+      }
     }
     num_frames = len / pcm_channels;
     if ((alsa_rc = snd_pcm_writei(pcm_handle, (const void*)pcm_buffer, num_frames)) < 0) {    
