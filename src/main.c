@@ -233,7 +233,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     pcm_freq = wav_decoder.sample_rate;
     pcm_channels = wav_decoder.channels;
     pcm_data_size -= ofs;
-//    printf("skip offset = %d\n", skip_offset);
+    printf("skip offset = %d\n", skip_offset);
   }
 
   // describe PCM file information
@@ -300,7 +300,9 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   size_t fread_len = 0;
   size_t fread_buffer_len = pcm_buffer_len;
   do {
+    printf("before fread\n");
     size_t len = fread(pcm_buffer, sizeof(int16_t) * pcm_channels, fread_buffer_len, fp);
+    printf("after fread\n");
     if (len <= 0) break;
     fread_len += len;
     if (input_format == FORMAT_RAW) {
