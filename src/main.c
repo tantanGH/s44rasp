@@ -224,7 +224,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     int32_t ofs = wav_decode_parse_header(&wav_decoder, fp);
     if (ofs < 0) {
       //printf("error: wav header parse error.\n");
-      goto catch;
+      goto exit;
     }
     pcm_freq = wav_decoder.sample_rate;
     pcm_channels = wav_decoder.channels;
@@ -235,27 +235,6 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   fseek(fp, 0, SEEK_END);
   size_t pcm_data_size = ftell(fp) - skip_offset;
   fseek(fp, skip_offset, SEEK_SET);
-
-  // init ALSA device
-  if ((alsa_rc = snd_pcm_open(&pcm_handle, pcm_device_name != NULL ? pcm_device_name : (uint8_t*)"default", 
-                    SND_PCM_STREAM_PLAYBACK, 0)) != 0) {
-    printf("error: pcm device (%s) open error. (%s)\n", pcm_device_name, snd_strerror(alsa_rc));
-    goto exit;
-  }
-
-  // set ALSA PCM parameters
-//  snd_pcm_hw_params_alloca(&pcm_params);
-//  snd_pcm_hw_params_any(pcm_handle, pcm_params);
-//  snd_pcm_hw_params_set_access(pcm_handle, pcm_params, SND_PCM_ACCESS_RW_INTERLEAVED);
-//  snd_pcm_hw_params_set_format(pcm_handle, pcm_params, SND_PCM_FORMAT_S16_LE);
-//  snd_pcm_hw_params_set_channels(pcm_handle, pcm_params, pcm_channels);
-//  snd_pcm_hw_params_set_rate(pcm_handle, pcm_params, pcm_freq, 0);
-//  snd_pcm_hw_params(pcm_handle, pcm_params);
-  if ((alsa_rc = snd_pcm_set_params(pcm_handle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, 
-                          pcm_channels, pcm_freq, 1, pcm_latency)) != 0) {
-    printf("error: pcm device setting error. (%s)\n", snd_strerror(alsa_rc));
-    goto exit;
-  }
 
   // describe PCM file information
   printf("File name     : %s\n", pcm_file_name);
@@ -295,6 +274,27 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     printf("PCM frequency : %d [Hz]\n", pcm_freq);
     printf("PCM channels  : %s\n", pcm_channels == 1 ? "mono" : "stereo");
     printf("PCM length    : %4.2f [sec]\n", (float)wav_decoder.duration / pcm_freq);
+  }
+
+  // init ALSA device
+  if ((alsa_rc = snd_pcm_open(&pcm_handle, pcm_device_name != NULL ? pcm_device_name : (uint8_t*)"default", 
+                    SND_PCM_STREAM_PLAYBACK, 0)) != 0) {
+    printf("error: pcm device (%s) open error. (%s)\n", pcm_device_name, snd_strerror(alsa_rc));
+    goto exit;
+  }
+
+  // set ALSA PCM parameters
+//  snd_pcm_hw_params_alloca(&pcm_params);
+//  snd_pcm_hw_params_any(pcm_handle, pcm_params);
+//  snd_pcm_hw_params_set_access(pcm_handle, pcm_params, SND_PCM_ACCESS_RW_INTERLEAVED);
+//  snd_pcm_hw_params_set_format(pcm_handle, pcm_params, SND_PCM_FORMAT_S16_LE);
+//  snd_pcm_hw_params_set_channels(pcm_handle, pcm_params, pcm_channels);
+//  snd_pcm_hw_params_set_rate(pcm_handle, pcm_params, pcm_freq, 0);
+//  snd_pcm_hw_params(pcm_handle, pcm_params);
+  if ((alsa_rc = snd_pcm_set_params(pcm_handle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, 
+                          pcm_channels, pcm_freq, 1, pcm_latency)) != 0) {
+    printf("error: pcm device setting error. (%s)\n", snd_strerror(alsa_rc));
+    goto exit;
   }
 
   size_t fread_len = 0;
