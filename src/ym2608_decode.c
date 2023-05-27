@@ -64,10 +64,10 @@ static inline int16_t ym2608_decode(uint8_t code, int16_t* step_size, int16_t la
   int16_t ss = *step_size;
   int32_t diff = ss * ( 1 + ( delta * 2 )) / 8;
 
-  int16_t estimate = (code & 0x08) ? last_data - diff : last_data + diff;
+  int32_t estimate = (code & 0x08) ? last_data - diff : last_data + diff;
   estimate = (estimate > 32767) ? 32767 : (estimate < -32768) ? -32768 : estimate;
  
-  int16_t next_step = ss * step_table[ delta ] / 64;
+  int32_t next_step = ss * step_table[ delta ] / 64;
   *step_size = (next_step < 127) ? 127 : (next_step > 24576) ? 24576 : next_step;
 
   return estimate;
