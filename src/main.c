@@ -218,8 +218,12 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     goto exit;
   }
 
+  // check file size
+  fseek(fp, 0, SEEK_END);
+  size_t pcm_data_size = ftell(fp);
+  fseek(fp, 0, SEEK_SET);
+
   // read header part of WAV file
-  size_t skip_offset = 0;
   if (input_format == FORMAT_WAV) {
     int32_t ofs = wav_decode_parse_header(&wav_decoder, fp);
     if (ofs < 0) {
@@ -228,14 +232,9 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     }
     pcm_freq = wav_decoder.sample_rate;
     pcm_channels = wav_decoder.channels;
-    skip_offset = ofs;
-    printf("skip offset = %d\n", skip_offset);
+    pcm_data_size -= ofs;
+//    printf("skip offset = %d\n", skip_offset);
   }
-
-  // check data content size
-  fseek(fp, 0, SEEK_END);
-  size_t pcm_data_size = ftell(fp) - skip_offset;
-  fseek(fp, skip_offset, SEEK_SET);
 
   // describe PCM file information
   printf("File name     : %s\n", pcm_file_name);
