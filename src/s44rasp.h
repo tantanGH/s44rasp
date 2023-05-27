@@ -9,7 +9,7 @@
 #define FORMAT_YM2608 (3)
 
 #define ALSA_SOFT_RESAMPLE (1)
-#define ALSA_LATENCY       (50000)
+#define ALSA_LATENCY       (4000)
 
 #define stricmp strcasecmp
 

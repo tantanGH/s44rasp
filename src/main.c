@@ -179,7 +179,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     goto exit;
   }
 
-  size_t pcm_buffer_len = pcm_freq * pcm_channels * 30;
+  size_t pcm_buffer_len = pcm_freq * pcm_channels * 2;
   pcm_buffer = malloc(sizeof(int16_t) * pcm_buffer_len);
   fp = fopen(pcm_file_name, "rb");
   if (fp == NULL) {
