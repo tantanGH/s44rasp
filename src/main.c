@@ -284,8 +284,8 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
         goto exit;
       }
     }
-    printf("%d/%d\n",fread_len * 2 * pcm_channels, pcm_data_size);
-  } while (fread_len * sizeof(int16_t) * pcm_channels < pcm_data_size);
+    printf("%d/%d\n", fread_len * 2, pcm_data_size);
+  } while (fread_len * 2 < pcm_data_size);
 
   fclose(fp);
   fp = NULL;
