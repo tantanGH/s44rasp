@@ -8,7 +8,6 @@
 typedef struct {
 
   int32_t sample_rate;
-  //int16_t auto_clip;
 
   int16_t step_index;
   int16_t last_estimate;

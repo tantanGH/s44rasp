@@ -27,7 +27,7 @@ static void show_help_message() {
   printf("options:\n");
   printf("     -d <alsa-device>    ... ALSA PCM device name (i.e. hw:3,0)\n");
   printf("     -s <serial-device>  ... serial device name (i.e. /dev/serial0)\n");
-  printf("     -l <latency>        ... ALSA PCM latency in msec (default:100ms)\n");
+//  printf("     -l <latency>        ... ALSA PCM latency in msec (default:100ms)\n");
 //  printf("     -f           ... supported format check\n");
   printf("     -h           ... show help message\n");
 }
@@ -39,7 +39,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
 
   // pcm attribs
   snd_pcm_t* pcm_handle = NULL;
-  snd_pcm_hw_params_t* pcm_params = NULL;
+//  snd_pcm_hw_params_t* pcm_params = NULL;
   int16_t* pcm_buffer = NULL; 
   void* fread_buffer = NULL;
   uint8_t* pcm_file_name = NULL;
@@ -179,12 +179,12 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   }
 
   // init adpcm (ym2608) decoder if needed
-//  if (input_format == FORMAT_YM2608) {
-//    if (ym2608_decode_init(&ym2608_decoder, pcm_freq * pcm_channels * 4, pcm_freq, pcm_channels) != 0) {
-//      printf("error: YM2608 adpcm decoder initialization error.\n");
-//      goto exit;
-//    }
-//  }
+  if (input_format == FORMAT_YM2608) {
+    if (ym2608_decode_init(&ym2608_decoder, pcm_freq, pcm_channels) != 0) {
+      printf("error: YM2608 adpcm decoder initialization error.\n");
+      goto exit;
+    }
+  }
 
   // open pcm file
   fp = fopen(pcm_file_name, "rb");
@@ -238,6 +238,12 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     printf("PCM length    : %4.2f [sec]\n", (float)pcm_data_size / pcm_channels / pcm_1sec_size);
   }
 
+  if (input_format == FORMAT_WAV) {
+    printf("PCM frequency : %d [Hz]\n", pcm_freq);
+    printf("PCM channels  : %s\n", pcm_channels == 1 ? "mono" : "stereo");
+    printf("PCM length    : %4.2f [sec]\n", (float)wav_decoder.duration / pcm_freq);
+  }
+
   if (input_format == FORMAT_YM2608) {
     float pcm_1sec_size = pcm_freq * 0.5;
     printf("PCM frequency : %d [Hz]\n", pcm_freq);
@@ -245,22 +251,16 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     printf("PCM length    : %4.2f [sec]\n", (float)pcm_data_size / pcm_channels / pcm_1sec_size);
   }
 
-  if (input_format == FORMAT_WAV) {
-    printf("PCM frequency : %d [Hz]\n", pcm_freq);
-    printf("PCM channels  : %s\n", pcm_channels == 1 ? "mono" : "stereo");
-    printf("PCM length    : %4.2f [sec]\n", (float)wav_decoder.duration / pcm_freq);
-  }
-
   // allocate file read buffer
   size_t fread_buffer_len = pcm_channels * pcm_freq * 1;    // 1 sec (adpcm=2sec)
   fread_buffer = malloc(input_format == FORMAT_ADPCM ? sizeof(uint8_t) * fread_buffer_len :
                                                        sizeof(int16_t) * fread_buffer_len);
-  printf("fread_buffer_len = %d\n", fread_buffer_len);
+  //printf("fread_buffer_len = %d\n", fread_buffer_len);
 
   // allocate ALSA pcm buffer
   size_t pcm_buffer_len = 2 * (pcm_freq < 44100 ? 48000 * 2 : pcm_freq) * 1; // 1 sec (adpcm=2sec)
   pcm_buffer = (int16_t*)malloc(sizeof(int16_t) * pcm_buffer_len);    // 16bit & stereo ... fixed
-  printf("pcm_buffer_len = %d\n", pcm_buffer_len);
+  //printf("pcm_buffer_len = %d\n", pcm_buffer_len);
 
   // init ALSA device
   if ((alsa_rc = snd_pcm_open(&pcm_handle, pcm_device_name != NULL ? pcm_device_name : (uint8_t*)"default", 
@@ -270,6 +270,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   }
 
   // set ALSA PCM parameters (16bit stereo output ... fixed)
+/*
   snd_pcm_hw_params_malloc(&pcm_params);
   snd_pcm_hw_params_any(pcm_handle, pcm_params);
 
@@ -289,12 +290,14 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     printf("error: pcm hw params setting error. (%s)\n", snd_strerror(alsa_rc));
     goto exit;
   }
+*/
 
-//  if ((alsa_rc = snd_pcm_set_params(pcm_handle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, 
-//                          2, pcm_freq, 1, pcm_latency)) != 0) {
-//    printf("error: pcm device setting error. (%s)\n", snd_strerror(alsa_rc));
-//    goto exit;
-//  }
+  // in case of 15.6kHz or 32kHz, upscale to 48kHz
+  if ((alsa_rc = snd_pcm_set_params(pcm_handle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, 2,
+                          (pcm_freq < 44100) ? 48000 : pcm_freq, 1, pcm_latency)) != 0) {
+    printf("error: pcm device setting error. (%s)\n", snd_strerror(alsa_rc));
+    goto exit;
+  }
 
   // sigint handler
   abort_flag = 0;
@@ -335,7 +338,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
       } else if (input_format == FORMAT_WAV) {
         decode_len = wav_decode_exec(&wav_decoder, pcm_buffer, fread_buffer, len);
       }
-      printf("decode_len = %d, len = %d\n", decode_len, len);
+      //printf("decode_len = %d, len = %d\n", decode_len, len);
       if ((alsa_rc = snd_pcm_writei(pcm_handle, (const void*)pcm_buffer, decode_len / 2)) < 0) {    
         if (snd_pcm_recover(pcm_handle, alsa_rc, 0) < 0) {
           printf("error: fatal pcm data write error.\n");
@@ -375,10 +378,10 @@ exit:
   }
 
   // close alsa params
-  if (pcm_params != NULL) {
-    snd_pcm_hw_params_free(pcm_params);
-    pcm_params = NULL;
-  }
+//  if (pcm_params != NULL) {
+//    snd_pcm_hw_params_free(pcm_params);
+//    pcm_params = NULL;
+//  }
 
   // close alsa device
   if (pcm_handle != NULL) {
@@ -414,9 +417,9 @@ exit:
   }
 
   // close ym2608 decoder
-//  if (input_format == FORMAT_YM2608) {
-//    ym2608_decode_close(&ym2608_decoder);
-//  }
+  if (input_format == FORMAT_YM2608) {
+    ym2608_decode_close(&ym2608_decoder);
+  }
 
   return rc;
 }
