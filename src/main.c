@@ -49,7 +49,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     goto exit;
   }
 
-  if (snd_pcm_open(&pcm_handle, pcm_device_name != NULL ? pcm_device_name : "default", 
+  if (snd_pcm_open(&pcm_handle, pcm_device_name != NULL ? pcm_device_name : (uint8_t*)"default", 
                     SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK) != 0) {
     printf("error: pcm device open error.\n");
     goto exit;
