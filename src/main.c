@@ -13,6 +13,14 @@
 // application
 #include "s44rasp.h"
 
+static int16_t abort_flag = 0;
+
+static void sigint_handler(int signal) {
+  if (signal == SIGINT) {
+    abort_flag = 1;
+  }
+}
+
 static void show_help_message() {
   printf("usage: s44rasp [options] <input-file[.pcm|.sXX|.mXX|.aXX|.nXX|.wav]>\n");
   printf("options:\n");
@@ -267,6 +275,9 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     goto exit;
   }
 
+  printf("\nnow playing ... push CTRL+C to quit.\n");
+  abort_flag = 0;
+
   if (input_format == FORMAT_ADPCM) {
 
     size_t fread_len = 0;
@@ -284,7 +295,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
         }
       }
       printf("%d/%d\n", fread_len, pcm_data_size);
-    } while (fread_len < pcm_data_size);
+    } while (fread_len < pcm_data_size && abort_flag == 0);
 
   } else {
 
@@ -307,23 +318,25 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
         }
       }
       printf("%d/%d\n", fread_len * sizeof(int16_t), pcm_data_size);
-    } while (fread_len * sizeof(int16_t) < pcm_data_size);
+    } while (fread_len * sizeof(int16_t) < pcm_data_size && abort_flag == 0);
   }
 
+  // close input file
   fclose(fp);
   fp = NULL;
 
-  if ((alsa_rc = snd_pcm_drain(pcm_handle)) != 0) {
-    printf("error: pcm drain error. (%s)\n", snd_strerror(alsa_rc));
-    goto exit;
+  // aborted?
+  if (abort_flag) {
+    printf("aborted.\n");
+    rc = 1;
+  } else {
+    // output remaining data
+    if ((alsa_rc = snd_pcm_drain(pcm_handle)) != 0) {
+      printf("error: pcm drain error. (%s)\n", snd_strerror(alsa_rc));
+      goto exit;
+    }
+    rc = 0;
   }
-
-  getchar();
-
-  rc = 0;
-
-catch:
-
 
 exit:
 
