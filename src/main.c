@@ -303,7 +303,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
 
   size_t fread_len = 0;
   do {
-    size_t len = fread(pcm_buffer, sizeof(int16_t) * pcm_channels, pcm_buffer_len, fp);
+    size_t len = fread(pcm_buffer, sizeof(int16_t), pcm_channels * pcm_buffer_len, fp);
     if (len == 0) break;
     fread_len += len;
     if (input_format == FORMAT_RAW) {
@@ -314,7 +314,8 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
         pcm_buffer_uint8[ i * 2 + 1 ] = c;
       }
     }
-    if ((alsa_rc = snd_pcm_writei(pcm_handle, (const void*)pcm_buffer, len)) < 0) {    
+    snd_pcm_uframes_t num_frames = len / pcm_channels;
+    if ((alsa_rc = snd_pcm_writei(pcm_handle, (const void*)pcm_buffer, num_frames)) < 0) {    
       if (snd_pcm_recover(pcm_handle, alsa_rc, 0) < 0) {
         printf("error: fatal pcm data write error.\n");
         goto exit;
