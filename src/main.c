@@ -6,15 +6,51 @@
 #define ALSA_SOFT_RESAMPLE (1)
 #define ALSA_LATENCY       (50000)
 
+static void show_help_message() {
+  printf("usage: s44rasp [options] <input-file[.pcm|.sXX|.mXX|.aXX|.nXX|.wav]>\n");
+  printf("options:\n");
+  printf("     -d <device> ... asound PCM device name (i.e. hw:3,0)\n");
+  printf("     -h          ... show help message\n");
+}
+
 int32_t main(int32_t argc, uint8_t* argv[]) {
 
   int32_t rc = -1;
 
   snd_pcm_t* pcm_handle = NULL;
   int16_t* pcm_buffer = NULL; 
+  uint8_t* pcm_file_name = NULL;
+  uint8_t* pcm_device = NULL;
   FILE* fp = NULL;
-  
-  if (snd_pcm_open(&pcm_handle, "hw:3,0", SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK) != 0) {
+
+  for (int16_t i = 1; i < argc; i++) {
+    if (argv[i][0] == '-' && strlen(argv[i]) >= 2) {
+      if (argv[i][1] == 'd' && i+1 < argc) {
+        pcm_device = argv[ i + 1 ];
+        i++;
+      } else if (argv[i][1] == 'h') {
+        show_help_message();
+        goto exit;
+      } else {
+        printf("error: unknown option (%s).\n",argv[i]);
+        goto exit;
+      }
+    } else {
+      if (pcm_file_name != NULL) {
+        printf("error: multiple files are not supported.\n");
+        goto exit;
+      }
+      pcm_file_name = argv[i];
+    }
+  }
+
+  if (pcm_file_name == NULL) {
+    show_help_message();
+    goto exit;
+  }
+
+  if (snd_pcm_open(&pcm_handle, pcm_device_name != NULL ? pcm_device_name : "default", 
+                    SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK) != 0) {
     printf("error: pcm device open error.\n");
     goto exit;
   }
@@ -22,7 +58,8 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   int16_t pcm_channels = 2;
   int32_t pcm_freq = 44100;
   
-  if (snd_pcm_set_params(pcm_handle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, pcm_channels, pcm_freq, ALSA_SOFT_RESAMPLE, ALSA_LATENCY) != 0) {
+  if (snd_pcm_set_params(pcm_handle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, 
+                          pcm_channels, pcm_freq, ALSA_SOFT_RESAMPLE, ALSA_LATENCY) != 0) {
     printf("error: pcm device setting error.\n");
     goto exit;
   }

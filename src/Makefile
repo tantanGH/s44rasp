@@ -12,7 +12,7 @@ OBJS = adpcm_decode.o raw_decode.o wav_decode.o main.o
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(LD) $(LDFLAGS) -o $@ $(LIBS) $^
+	$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $<
