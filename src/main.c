@@ -233,7 +233,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     pcm_freq = wav_decoder.sample_rate;
     pcm_channels = wav_decoder.channels;
     pcm_data_size -= ofs;
-    printf("skip offset = %d\n", skip_offset);
+    printf("skip offset = %d\n", ofs);
   }
 
   // describe PCM file information
