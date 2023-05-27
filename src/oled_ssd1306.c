@@ -53,7 +53,7 @@ int32_t oled_ssd1306_open(OLED_SSD1306* ssd1306, int16_t width, int16_t height) 
     0x40,
     0x00, 0x21, 0x00, ssd1306->width - 1,
     0x00, 0x22, 0x00, ssd1306->height/8 - 1,
-  }
+  };
 	write(ssd1306->handle, clear_commands, sizeof(clear_commands));
 
   uint8_t clear_data[ OLED_MAX_WIDTH ];
