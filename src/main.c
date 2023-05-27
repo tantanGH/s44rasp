@@ -251,16 +251,16 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     printf("PCM length    : %4.2f [sec]\n", (float)wav_decoder.duration / pcm_freq);
   }
 
-  // allocate pcm buffer
-  size_t pcm_buffer_len = pcm_freq < 44100 ? 48000 * 1 : pcm_freq * 1; // 1 sec
-  pcm_buffer = (int16_t*)malloc(sizeof(int16_t) * 2 * pcm_buffer_len);    // 16bit & stereo ... fixed
-  printf("pcm_buffer_len = %d\n", pcm_buffer_len);
-
   // allocate file read buffer
   size_t fread_buffer_len = pcm_channels * pcm_freq * 1;    // 1 sec
   fread_buffer = malloc(input_format == FORMAT_ADPCM ? sizeof(uint8_t) * fread_buffer_len :
                                                        sizeof(int16_t) * fread_buffer_len);
   printf("fread_buffer_len = %d\n", fread_buffer_len);
+
+  // allocate ALSA pcm buffer
+  size_t pcm_buffer_len = 2 * (pcm_freq < 44100 ? 48000 * 1 : pcm_freq) * 1; // 1 sec
+  pcm_buffer = (int16_t*)malloc(sizeof(int16_t) * pcm_buffer_len);    // 16bit & stereo ... fixed
+  printf("pcm_buffer_len = %d\n", pcm_buffer_len);
 
   // init ALSA device
   if ((alsa_rc = snd_pcm_open(&pcm_handle, pcm_device_name != NULL ? pcm_device_name : (uint8_t*)"default", 
