@@ -48,10 +48,11 @@ int32_t wav_decode_parse_header(WAV_DECODE_HANDLE* wav, FILE* fp) {
     printf("error: incorrect wav format.\n");
     goto exit;
   }
-  printf("chunkID ok. %d\n", bytes_read);
+//  printf("chunkID ok. %d\n", bytes_read);
+
   // ChunkSize
   bytes_read += fread(buf, sizeof(uint8_t), 4, fp);
-  printf("chunk size ok. %d\n", bytes_read);
+//  printf("chunk size ok. %d\n", bytes_read);
 
   // Format
   bytes_read += fread(buf, sizeof(uint8_t), 4, fp);
@@ -60,12 +61,12 @@ int32_t wav_decode_parse_header(WAV_DECODE_HANDLE* wav, FILE* fp) {
     printf("error: incorrect wav format.\n");
     goto exit;
   }
-  printf("format ok. %d\n", bytes_read);
+//  printf("format ok. %d\n", bytes_read);
 
   // Subchunk1ID
   bytes_read += fread(buf, sizeof(uint8_t), 4, fp);
   buf[4] = '\0';
-  printf("sub chunk1 ID ok. %d\n", bytes_read);
+//  printf("sub chunk1 ID ok. %d\n", bytes_read);
 
   // check if we have a JUNK Chunk
   if (strcmp(buf, "JUNK") == 0) {
@@ -82,14 +83,14 @@ int32_t wav_decode_parse_header(WAV_DECODE_HANDLE* wav, FILE* fp) {
     bytes_read += fread(buf, sizeof(uint8_t), 4, fp);
     buf[4] = '\0';
   }
-  printf("junk ok. %d\n", bytes_read);
+//  printf("junk ok. %d\n", bytes_read);
 
   // get the fmt chunk
   if (strcmp(buf, "fmt ") != 0) {
     printf("error: wav fmt chunk read error.\n");
     goto exit;
   }
-  printf("fmt ok. %d\n", bytes_read);
+//  printf("fmt ok. %d\n", bytes_read);
 
   // Subchunk1Size
   bytes_read += fread(buf, sizeof(uint8_t), 4, fp);
@@ -102,7 +103,7 @@ int32_t wav_decode_parse_header(WAV_DECODE_HANDLE* wav, FILE* fp) {
     printf("error: wav Subchunk1Size error.\n");
     goto exit;
   }
-  printf("sub chunk1 size ok. %d\n", bytes_read);
+//  printf("sub chunk1 size ok. %d\n", bytes_read);
 
   // AudioFormat
   bytes_read += fread(buf, sizeof(uint8_t), 2, fp);
@@ -110,7 +111,7 @@ int32_t wav_decode_parse_header(WAV_DECODE_HANDLE* wav, FILE* fp) {
     printf("error: wav AudioFormat error.\n");
     goto exit;
   }
-  printf("audio fmt ok. %d\n", bytes_read);
+//  printf("audio fmt ok. %d\n", bytes_read);
 
   // NumChannels
   bytes_read += fread(buf, sizeof(uint8_t), 2, fp);
@@ -119,7 +120,7 @@ int32_t wav_decode_parse_header(WAV_DECODE_HANDLE* wav, FILE* fp) {
     printf("error: wav unsupported channels (%d).\n", wav->channels);
     goto exit;
   }
-  printf("num channels ok. %d\n", bytes_read);
+//  printf("num channels ok. %d\n", bytes_read);
 
   // SampleRate
   bytes_read += fread(buf, sizeof(uint8_t), 4, fp);
@@ -128,17 +129,17 @@ int32_t wav_decode_parse_header(WAV_DECODE_HANDLE* wav, FILE* fp) {
     printf("error: wav unsupported sample rate (%d).\n", wav->sample_rate);
     goto exit;
   }
-  printf("sample rate ok. %d\n", bytes_read);
+//  printf("sample rate ok. %d\n", bytes_read);
 
   // ByteRate
   bytes_read += fread(buf, sizeof(uint8_t), 4, fp);
   wav->byte_rate = buf[0] + (buf[1] <<8) + (buf[2] << 16) + (buf[3] << 24);
-  printf("byte rate ok. %d\n", bytes_read);
+//  printf("byte rate ok. %d\n", bytes_read);
 
   // BlockAlign
   bytes_read += fread(buf, sizeof(uint8_t), 2, fp);
   wav->block_align = buf[0] + (buf[1] << 8);
-  printf("block align ok. %d\n", bytes_read);
+//  printf("block align ok. %d\n", bytes_read);
 
   // BitsPerSample
   bytes_read += fread(buf, sizeof(uint8_t), 2, fp);
@@ -147,13 +148,13 @@ int32_t wav_decode_parse_header(WAV_DECODE_HANDLE* wav, FILE* fp) {
     printf("error: wav unsupported bit per sample (%d).\n", wav->bits_per_sample);
     goto exit;
   }
-  printf("bit per sample ok. %d\n", bytes_read);
+//  printf("bit per sample ok. %d\n", bytes_read);
 
   // skip 2 bytes if format is 18
   if (format == 18) {
     bytes_read += fread(buf, sizeof(uint8_t), 2, fp);
   }
-  printf("format 18 ok. %d\n", bytes_read);
+//  printf("format 18 ok. %d\n", bytes_read);
 
   // Subchunk2ID
   bytes_read += fread(buf, sizeof(uint8_t), 4, fp);
@@ -175,12 +176,12 @@ int32_t wav_decode_parse_header(WAV_DECODE_HANDLE* wav, FILE* fp) {
     bytes_read += fread(buf, sizeof(uint8_t), 4, fp);
     buf[4] = '\0';
   }
-  printf("sub chunk2 id ok. %d\n", bytes_read);
+//  printf("sub chunk2 id ok. %d\n", bytes_read);
 
   // Subchunk2Size
   bytes_read += fread(buf, sizeof(uint8_t), 4, fp);
   wav->duration = (buf[0] + (buf[1]<<8) + (buf[2]<<16) + (buf[3]<<24)) / wav->block_align;
-  printf("sub chunk 2 size ok. %d\n", bytes_read);
+//  printf("sub chunk 2 size ok. %d\n", bytes_read);
 
   rc = (int32_t)bytes_read;
 
