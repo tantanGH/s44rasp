@@ -210,7 +210,7 @@ void oled_ssd1306_print(OLED_SSD1306* ssd1306, int16_t pos_x, int16_t pos_y, uin
 	write(ssd1306->handle, commands, sizeof(commands));
 
   for (int16_t i = 0; i < mes_len; i++) {
-    write(ssd1306->handle, font6x8_data + 6 * mes[i], 6);
+    write(ssd1306->handle, font6x8_data + 6 * (mes[i] - 0x20), 6);
   }
   
 }
