@@ -53,15 +53,15 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   int32_t alsa_rc = 0;
   FILE* fp = NULL;
 
-  // oled
-  int16_t use_oled = 1;
-  OLED_SSD1306 ssd1306 = { 0 };
-
   // decoders
   ADPCM_DECODE_HANDLE adpcm_decoder = { 0 };
   RAW_DECODE_HANDLE raw_decoder = { 0 };
   WAV_DECODE_HANDLE wav_decoder = { 0 };
   YM2608_DECODE_HANDLE ym2608_decoder = { 0 };
+
+  // oled
+  int16_t use_oled = 1;
+  OLED_SSD1306 ssd1306 = { 0 };
 
   printf("s44rasp - X68k ADPCM/PCM/WAV player for Raspberry Pi version " PROGRAM_VERSION " by tantan\n");
 
@@ -219,6 +219,27 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   size_t pcm_data_size = ftell(fp) - skip_offset;
   fseek(fp, skip_offset, SEEK_SET);
 
+  if (use_oled) {
+    static uint8_t mes[128];
+    uint8_t* c = strrchr(pcm_file_name,'/');
+    sprintf(mes, "FILE NAME: %s", c != NULL ? c+1 : pcm_file_name);
+    oled_ssd1306_print(&ssd1306, 0, 0, mes);
+    sprintf(mes, "DATA SIZE: %d bytes", pcm_data_size);
+    oled_ssd1306_print(&ssd1306, 0, 1, mes);
+    sprintf(mes, "DATA FORMAT: %s", 
+      input_format == FORMAT_WAV ? "WAV" :
+      input_format == FORMAT_YM2608 ? "ADPCM(YM2608)" :
+      input_format == FORMAT_RAW ? "16bit signed raw PCM (big)" : 
+      "ADPCM(MSM6258V)");
+    oled_ssd1306_print(&ssd1306, 0, 2, mes);
+    sprintf(mes, "PCM FREQ: %d [Hz]", pcm_freq);
+    oled_ssd1306_print(&ssd1306, 0, 3, mes);
+    sprintf(mes, "PCM CHANNEL: %s", pcm_channels == 1 ? "mono" : "stereo");
+    oled_ssd1306_print(&ssd1306, 0, 4, mes);
+    oled_ssd1306_print(&ssd1306, 0, 5, "L:");
+    oled_ssd1306_print(&ssd1306, 0, 6, "R:");
+  }
+
   // describe PCM file information
   printf("File name     : %s\n", pcm_file_name);
   printf("Data size     : %d [bytes]\n", pcm_data_size);
@@ -291,7 +312,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
       printf("error: OLED SSD1306 device init error.\n");
       goto exit;
     }
-    oled_ssd1306_print(&ssd1306,0,0,"0123456789ABCDEFabcdef");
+    //oled_ssd1306_print(&ssd1306,0,0,"0123456789ABCDEFabcdef");
   }
 
   // sigint handler

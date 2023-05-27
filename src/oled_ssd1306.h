@@ -16,5 +16,6 @@ typedef struct {
 int32_t oled_ssd1306_open(OLED_SSD1306* ssd1306);
 void oled_ssd1306_close(OLED_SSD1306* ssd1306);
 void oled_ssd1306_print(OLED_SSD1306* ssd1306, int16_t pos_x, int16_t pos_y, uint8_t* mes);
+void oled_ssd1306_show_meter(OLED_SSD1306* ssd1306, int16_t pos_x, int16_t pos_y, int16_t current_level, int16_t peak_level);
 
 #endif

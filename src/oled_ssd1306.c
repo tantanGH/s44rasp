@@ -130,7 +130,7 @@ int32_t oled_ssd1306_open(OLED_SSD1306* ssd1306) {
   }
 
   // send init command
-  uint8_t	init_commands[] = {
+  static uint8_t init_commands[] = {
     0x00,                 // command stream
     0xAE,                 // display off
     0x8D, 0x14,           // charge pump
@@ -152,14 +152,14 @@ int32_t oled_ssd1306_open(OLED_SSD1306* ssd1306) {
   };
 	write(ssd1306->handle, init_commands, sizeof(init_commands));
 
-  uint8_t clear_commands[] = {
+  static uint8_t clear_commands[] = {
     0x00,                 // command stream
     0xb0,                 // set page start address
     0x21, 0x00, 0x7f,     // column range
   };
 	write(ssd1306->handle, clear_commands, sizeof(clear_commands));
 
-  uint8_t clear_data[] = { 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, };
+  static uint8_t clear_data[] = { 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, };
   for (int16_t i = 0; i < ssd1306->height; i++) {
     write(ssd1306->handle, clear_data, sizeof(clear_data));
   }
@@ -170,7 +170,7 @@ int32_t oled_ssd1306_open(OLED_SSD1306* ssd1306) {
 //    write(ssd1306->handle, line_data, sizeof(line_data));
 //  }
   
-  uint8_t on_commands[] = { 0x80, 0xAF };
+  static uint8_t on_commands[] = { 0x80, 0xAF };
   write(ssd1306->handle, on_commands, sizeof(on_commands));    // display on
 
   rc = 0;
@@ -202,19 +202,42 @@ void oled_ssd1306_print(OLED_SSD1306* ssd1306, int16_t pos_x, int16_t pos_y, uin
   int16_t mes_len = strlen(mes);
   if (mes_len > (128 - pos_x)) mes_len = 128 - pos_x;
 
-  uint8_t commands[] = {
+  static uint8_t commands[] = {
     0x00,                 // command stream
-//    0x20, 0x20,           // horizontal addressing mode
     0x21, pos_x, 0x7f,    // column range
-    0x22, pos_y, 0x07,    // page range
+    0x22, pos_y, pos_y,   // page range
   };
 	write(ssd1306->handle, commands, sizeof(commands));
 
-  uint8_t data[7];
+  static uint8_t data[7];
   data[0] = 0x40;
   for (int16_t i = 0; i < mes_len; i++) {
     memcpy(data+1, font6x8_data + 6 * (mes[i] - 0x20), 6);
     write(ssd1306->handle, data, 7);
   }
   
+}
+
+//
+//  show level meter
+//
+void oled_ssd1306_show_meter(OLED_SSD1306* ssd1306, int16_t pos_x, int16_t pos_y, int16_t current_level, int16_t peak_level) {
+
+  static uint8_t commands[] = {
+    0x00,                 // command stream
+    0x21, pos_x, 0x7f,    // column range
+    0x22, pos_y, pos_y,   // page range
+  };
+	write(ssd1306->handle, commands, sizeof(commands));
+
+  static uint8_t data_on[7]   = { 0x40, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x00, };
+  static uint8_t data_off[7]  = { 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, };
+  static uint8_t data_peak[7] = { 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7f, };
+
+  int16_t num_cells = ( 128 - pos_x ) / 6;
+  int16_t on_cells = current_level < 0 ? num_cells * current_level / -32768 : num_cells * current_level / 32768;
+  for (int16_t i = 0; i < num_cells; i++) {
+    write(ssd1306->handle, i < on_cells ? data_on : data_off, 7);
+  }
+
 }
