@@ -210,20 +210,8 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
 //  snd_pcm_hw_params_get_period_size(pcm_params, &num_frames, NULL);
 //  fprintf(stderr,"# frames in a period: %d\n", num_frames);
 
-  size_t pcm_buffer_len = pcm_freq;
-  pcm_buffer = (int16_t*)malloc(sizeof(int16_t) * pcm_channels * pcm_buffer_len);
-  fp = fopen(pcm_file_name, "rb");
-  if (fp == NULL) {
-    printf("error: input pcm file open error.\n");
-    goto exit;
-  }
-
-  // check file size
-  fseek(fp, 0, SEEK_END);
-  size_t pcm_data_size = ftell(fp);
-  fseek(fp, 0, SEEK_SET);
-
   // read header part of WAV file
+  size_t skip_offset = 0;
   if (input_format == FORMAT_WAV) {
     int32_t ofs = wav_decode_parse_header(&wav_decoder, fp);
     if (ofs < 0) {
@@ -232,8 +220,22 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     }
     pcm_freq = wav_decoder.sample_rate;
     pcm_channels = wav_decoder.channels;
-    pcm_data_size -= ofs;
+    skip_offset = ofs;
     //printf("skip offset = %d\n", ofs);
+  }
+
+  // check file size
+  fseek(fp, 0, SEEK_END);
+  size_t pcm_data_size = ftell(fp) - skip_offset;
+  fseek(fp, skip_offset, SEEK_SET);
+
+  // allocate pcm buffer
+  size_t pcm_buffer_len = pcm_freq;
+  pcm_buffer = (int16_t*)malloc(sizeof(int16_t) * pcm_channels * pcm_buffer_len);
+  fp = fopen(pcm_file_name, "rb");
+  if (fp == NULL) {
+    printf("error: input pcm file open error.\n");
+    goto exit;
   }
 
   // describe PCM file information
@@ -300,7 +302,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   size_t fread_len = 0;
   do {
     printf("before fread\n");
-    size_t len = fread(pcm_buffer, sizeof(int16_t) * pcm_channels, pcm_buffer_len, fp);
+    size_t len = fread(pcm_buffer, sizeof(int16_t), pcm_channels * pcm_buffer_len, fp);
     printf("after fread\n");
     if (len == 0) break;
     fread_len += len;
