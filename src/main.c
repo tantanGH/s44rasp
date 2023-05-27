@@ -287,7 +287,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
 
   // OLED SSD1306
   if (use_oled) {
-    if (oled_ssd1306_open(&ssd1306, 128, 64) != 0) {
+    if (oled_ssd1306_open(&ssd1306) != 0) {
       printf("error: OLED SSD1306 device init error.\n");
       goto exit;
     }
