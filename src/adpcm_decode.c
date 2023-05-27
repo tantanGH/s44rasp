@@ -157,6 +157,8 @@ size_t adpcm_decode_exec(ADPCM_DECODE_HANDLE* adpcm, int16_t* output_buffer, uin
 
     }
 
+    printf("source_buffer_ofs=%d, output_buffer_ofs=%d\n", source_buffer_ofs, output_buffer_ofs);
+
   }
 
   return output_buffer_ofs;
