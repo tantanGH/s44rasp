@@ -252,13 +252,13 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   }
 
   // allocate file read buffer
-  size_t fread_buffer_len = pcm_channels * pcm_freq * 1;    // 1 sec
+  size_t fread_buffer_len = pcm_channels * pcm_freq * 1;    // 1 sec (adpcm=2sec)
   fread_buffer = malloc(input_format == FORMAT_ADPCM ? sizeof(uint8_t) * fread_buffer_len :
                                                        sizeof(int16_t) * fread_buffer_len);
   printf("fread_buffer_len = %d\n", fread_buffer_len);
 
   // allocate ALSA pcm buffer
-  size_t pcm_buffer_len = 2 * (pcm_freq < 44100 ? 48000 * 1 : pcm_freq) * 1; // 1 sec
+  size_t pcm_buffer_len = 2 * (pcm_freq < 44100 ? 48000 * 2 : pcm_freq) * 1; // 1 sec (adpcm=2sec)
   pcm_buffer = (int16_t*)malloc(sizeof(int16_t) * pcm_buffer_len);    // 16bit & stereo ... fixed
   printf("pcm_buffer_len = %d\n", pcm_buffer_len);
 
