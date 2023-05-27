@@ -234,6 +234,10 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     pcm_channels = wav_decoder.channels;
     pcm_data_size -= ofs;
     printf("skip offset = %d\n", ofs);
+
+    fclose(fp);
+    fopen(pcm_file_name, "rb");
+    fseek(fp, ofs, SEEK_SET);
   }
 
   // describe PCM file information
