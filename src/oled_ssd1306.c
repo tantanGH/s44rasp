@@ -203,6 +203,7 @@ void oled_ssd1306_print(OLED_SSD1306* ssd1306, int16_t pos_x, int16_t pos_y, uin
 
   uint8_t commands[] = {
     0x00,                 // command stream
+    0x20, 0x00,           // horizontal addressing mode
     0x21, pos_x, 0x7f,    // column range
     0x22, pos_y, 0x07,    // page range
   };
