@@ -210,6 +210,13 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
 //  snd_pcm_hw_params_get_period_size(pcm_params, &num_frames, NULL);
 //  fprintf(stderr,"# frames in a period: %d\n", num_frames);
 
+  // open pcm file
+  fp = fopen(pcm_file_name, "rb");
+  if (fp == NULL) {
+    printf("error: input pcm file open error.\n");
+    goto exit;
+  }
+
   // read header part of WAV file
   size_t skip_offset = 0;
   if (input_format == FORMAT_WAV) {
@@ -232,11 +239,6 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   // allocate pcm buffer
   size_t pcm_buffer_len = pcm_freq;
   pcm_buffer = (int16_t*)malloc(sizeof(int16_t) * pcm_channels * pcm_buffer_len);
-  fp = fopen(pcm_file_name, "rb");
-  if (fp == NULL) {
-    printf("error: input pcm file open error.\n");
-    goto exit;
-  }
 
   // describe PCM file information
   printf("File name     : %s\n", pcm_file_name);
