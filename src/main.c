@@ -1,14 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+
+// alsa
 #include <alsa/asoundlib.h>
+#include <alsa/error.h>
+
+// codec
 #include "adpcm_decode.h"
 #include "raw_decode.h"
 #include "wav_decode.h"
-#include "s44rasp.h"
 
-#define ALSA_SOFT_RESAMPLE (1)
-#define ALSA_LATENCY       (50000)
+// application
+#include "s44rasp.h"
 
 static void show_help_message() {
   printf("usage: s44rasp [options] <input-file[.pcm|.sXX|.mXX|.aXX|.nXX|.wav]>\n");
