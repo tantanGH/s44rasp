@@ -295,13 +295,9 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
       if (len == 0) break;
       fread_len += len;
       if (input_format == FORMAT_RAW) {
-        raw_decode_exec(&raw_decoder, )
-        uint8_t* pcm_buffer_uint8 = (uint8_t*)pcm_buffer;
-        for (size_t i = 0; i < len; i++) {
-          uint8_t c = pcm_buffer_uint8[ i * 2 + 0 ];
-          pcm_buffer_uint8[ i * 2 + 0 ] = pcm_buffer_uint8[ i * 2 + 1 ]; 
-          pcm_buffer_uint8[ i * 2 + 1 ] = c;
-        }
+        raw_decode_exec(&raw_decoder, pcm_buffer, fread_buffer, len);
+      } else if (input_format == FORMAT_WAV) {
+        wav_decode_exec(&wav_decoder, pcm_buffer, fread_buffer, len);
       }
       snd_pcm_uframes_t num_frames = len / pcm_channels;
       if ((alsa_rc = snd_pcm_writei(pcm_handle, (const void*)pcm_buffer, num_frames)) < 0) {    
