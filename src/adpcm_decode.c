@@ -96,7 +96,7 @@ int32_t adpcm_decode_open(ADPCM_DECODE_HANDLE* adpcm) {
   int32_t rc = -1;
 
   adpcm->sample_rate = 15625;
-  adpcm->auto_clip = 0;
+  //adpcm->auto_clip = 0;
 
   adpcm->step_index = 0;
   adpcm->last_estimate = 0;
@@ -119,54 +119,31 @@ void adpcm_decode_close(ADPCM_DECODE_HANDLE* adpcm) {
 //
 //  execute adpcm decoding
 //
-int32_t adpcm_decode_exec(ADPCM_DECODE_HANDLE* adpcm, int16_t* output_buffer, uint8_t* source_buffer, size_t source_buffer_len) {
+size_t adpcm_decode_exec(ADPCM_DECODE_HANDLE* adpcm, int16_t* output_buffer, uint8_t* source_buffer, size_t source_buffer_len) {
 
   size_t source_buffer_ofs = 0;
   size_t output_buffer_ofs = 0;
 
   int16_t* output_buffer_int16 = (int16_t*)output_buffer;
 
-  if (adpcm->auto_clip) {
+  while (source_buffer_ofs < source_buffer_len) {
 
-    while (source_buffer_ofs < source_buffer_len) {
-
-      uint8_t code;
-      if ((adpcm->resample_counter % 2) == 0) {
-        code = source_buffer[ source_buffer_ofs ] & 0x0f;
-      } else {
-        code = (source_buffer[ source_buffer_ofs++ ] >> 4) & 0x0f;
-      }
-      adpcm->resample_counter++;
-
-      int16_t step_index = adpcm->step_index;
-      int16_t new_estimate = msm6258v_decode(code, &step_index, adpcm->last_estimate);
-      output_buffer_int16[ output_buffer_ofs++ ] = new_estimate * 8;   // 12bit signed PCM to 15bit signed PCM
-      adpcm->step_index = step_index;
-      adpcm->last_estimate = new_estimate;
-
+    uint8_t code;
+    if ((adpcm->resample_counter % 2) == 0) {
+      code = source_buffer[ source_buffer_ofs ] & 0x0f;
+    } else {
+      code = (source_buffer[ source_buffer_ofs++ ] >> 4) & 0x0f;
     }
+    adpcm->resample_counter++;
 
-  } else {
-
-    while (source_buffer_ofs < source_buffer_len) {
-
-      uint8_t code;
-      if ((adpcm->resample_counter % 2) == 0) {
-        code = source_buffer[ source_buffer_ofs ] & 0x0f;
-      } else {
-        code = (source_buffer[ source_buffer_ofs++ ] >> 4) & 0x0f;
-      }
-      adpcm->resample_counter++;
-
-      int16_t step_index = adpcm->step_index;
-      int16_t new_estimate = msm6258v_decode(code, &step_index, adpcm->last_estimate);
-      output_buffer_int16[ output_buffer_ofs++ ] = new_estimate * 16;   // 12bit signed PCM to 16bit signed PCM
-      adpcm->step_index = step_index;
-      adpcm->last_estimate = new_estimate;
-
-    }
+    int16_t step_index = adpcm->step_index;
+    int16_t new_estimate = msm6258v_decode(code, &step_index, adpcm->last_estimate);
+    output_buffer_int16[ output_buffer_ofs++ ] = new_estimate * 16;   // 12bit signed PCM to 16bit signed PCM
+    output_buffer_int16[ output_buffer_ofs++ ] = new_estimate * 16;   // mono to stereo duplication
+    adpcm->step_index = step_index;
+    adpcm->last_estimate = new_estimate;
 
   }
 
-  return output_buffer_ofs * sizeof(int16_t);
+  return output_buffer_ofs;
 }
