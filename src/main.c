@@ -12,6 +12,9 @@
 #include "wav_decode.h"
 #include "ym2608_decode.h"
 
+// oled
+#include "oled_ssd1306.h"
+
 // application
 #include "s44rasp.h"
 
@@ -49,6 +52,9 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
 //  int16_t pcm_format_check = 0;
   int32_t alsa_rc = 0;
   FILE* fp = NULL;
+
+  // oled
+  int16_t use_oled = 1;
 
   // decoders
   ADPCM_DECODE_HANDLE adpcm_decoder = { 0 };
