@@ -298,7 +298,8 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
           goto exit;
         }
       }
-      printf("%d/%d\n", fread_len, pcm_data_size);
+      printf("\r%d/%d", fread_len, pcm_data_size);
+      fflush(stdout);
     } while (fread_len < pcm_data_size && abort_flag == 0);
 
   } else {
@@ -321,9 +322,12 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
           goto exit;
         }
       }
-      printf("%d/%d\n", fread_len * sizeof(int16_t), pcm_data_size);
+      printf("\r%d/%d", fread_len * sizeof(int16_t), pcm_data_size);
+      fflush(stdout);
     } while (fread_len * sizeof(int16_t) < pcm_data_size && abort_flag == 0);
   }
+
+  printf("\n");
 
   // close input file
   fclose(fp);
