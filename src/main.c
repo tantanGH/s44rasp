@@ -297,10 +297,13 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
       pcm_buffer_uint8[ i * 2 + 1 ] = c;
     }
     snd_pcm_uframes_t num_frames = len / pcm_channels;
-    if ((alsa_rc = snd_pcm_writei(pcm_handle, (const void*)pcm_buffer, num_frames)) != 0) {
-      printf("error: pcm device write error. (%s)\n", snd_strerror(alsa_rc));
-      goto exit;
+    if ((alsa_rc = snd_pcm_writei(pcm_handle, (const void*)pcm_buffer, num_frames)) < 0) {    
+      if (snd_pcm_recover(pcm_handle, alsa_rc, 0) < 0) {
+        printf("error: fatal pcm data write error.\n");
+        goto exit;
+      }
     }
+    printf(".\n");
   } while (fread_len * sizeof(int16_t) < pcm_data_size);
 
   fclose(fp);
