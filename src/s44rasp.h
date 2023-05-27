@@ -8,7 +8,7 @@
 #define FORMAT_WAV    (2)
 #define FORMAT_YM2608 (3)
 
-#define ALSA_SOFT_RESAMPLE (0)
+#define ALSA_SOFT_RESAMPLE (1)
 #define ALSA_LATENCY       (100)
 
 #define stricmp strcasecmp

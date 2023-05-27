@@ -18,7 +18,7 @@ static void show_help_message() {
   printf("options:\n");
   printf("     -d <device>  ... ALSA PCM device name (i.e. hw:3,0)\n");
   printf("     -l <latency> ... ALSA PCM latency in msec (default:100ms)\n");
-  printf("     -f           ... supported format check\n");
+//  printf("     -f           ... supported format check\n");
   printf("     -h           ... show help message\n");
 }
 
@@ -33,7 +33,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   uint8_t* pcm_file_name = NULL;
   uint8_t* pcm_device_name = NULL;
   uint32_t pcm_latency = 100;
-  int16_t pcm_format_check = 0;
+//  int16_t pcm_format_check = 0;
   int32_t alsa_rc = 0;
   FILE* fp = NULL;
 
@@ -53,8 +53,8 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
       } else if (argv[i][1] == 'l' && i+1 < argc) {
         pcm_latency = atoi(argv[ i + 1 ]);
         i++;
-      } else if (argv[i][1] == 'f') {
-        pcm_format_check = 1;
+//      } else if (argv[i][1] == 'f') {
+//        pcm_format_check = 1;
       } else if (argv[i][1] == 'h') {
         show_help_message();
         goto exit;
@@ -71,6 +71,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     }
   }
 
+/*
   if (pcm_format_check) {
     snd_pcm_hw_params_t* params;
     snd_pcm_format_mask_t* format_mask;
@@ -98,6 +99,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     pcm_handle = NULL;
     goto exit;
   }
+*/
 
   if (pcm_file_name == NULL) {
     show_help_message();
@@ -282,19 +284,25 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     printf("PCM length    : %4.2f [sec]\n", (float)wav_decoder.duration / pcm_freq);
   }
 
-  size_t fread_len = fread(pcm_buffer, sizeof(int16_t), pcm_buffer_len, fp);
-  uint8_t* pcm_buffer_uint8 = (uint8_t*)pcm_buffer;
-  for (size_t i = 0; i < fread_len; i++) {
-    uint8_t c = pcm_buffer_uint8[ i * 2 + 0 ];
-    pcm_buffer_uint8[ i * 2 + 0 ] = pcm_buffer_uint8[ i * 2 + 1 ]; 
-    pcm_buffer_uint8[ i * 2 + 1 ] = c;
-  }
-  snd_pcm_uframes_t num_frames = fread_len / pcm_channels;
-  if ((alsa_rc = snd_pcm_writei(pcm_handle, (const void*)pcm_buffer, num_frames)) != 0) {
-    printf("error: pcm device write error. (%s)\n", snd_strerror(alsa_rc));
-    goto exit;
-  }
-  
+  size_t fread_len = 0;
+  size_t fread_buffer_len = 1024;
+  do {
+    size_t len = fread(pcm_buffer, sizeof(int16_t), fread_buffer_len, fp);
+    if (len <= 0) break;
+    fread_len += len;
+    uint8_t* pcm_buffer_uint8 = (uint8_t*)pcm_buffer;
+    for (size_t i = 0; i < len; i++) {
+      uint8_t c = pcm_buffer_uint8[ i * 2 + 0 ];
+      pcm_buffer_uint8[ i * 2 + 0 ] = pcm_buffer_uint8[ i * 2 + 1 ]; 
+      pcm_buffer_uint8[ i * 2 + 1 ] = c;
+    }
+    snd_pcm_uframes_t num_frames = len / pcm_channels;
+    if ((alsa_rc = snd_pcm_writei(pcm_handle, (const void*)pcm_buffer, num_frames)) != 0) {
+      printf("error: pcm device write error. (%s)\n", snd_strerror(alsa_rc));
+      goto exit;
+    }
+  } while (fread_len * sizeof(int16_t) < pcm_data_size);
+
   fclose(fp);
   fp = NULL;
 
