@@ -33,22 +33,40 @@ int32_t oled_ssd1306_open(OLED_SSD1306* ssd1306, int16_t width, int16_t height) 
 
   // send init command
   uint8_t	init_commands[] = {
-      0x00, 0xAE,           // display off
-			0x80, 0xD5, 0x80,     // display clock
-			0x80, 0xA8, 0x3F,     // multiplex ratio (64 - 1)
-			0x80, 0xD3, 0x00,     // display offset 0
-			0x80, 0x40, 0x00,     // start line
-			0x00, 0xA1,           // segment remap
-			0x00, 0xC8,           // com scan dir
-			0x80, 0xDA, 0x12,     // com pin hw config
-			0x80, 0x81, 0x7F,     // contrast
-			0x00, 0xA4,           // disable entire display on
-			0x00, 0xA6,           // set normal display
-			0x80, 0x8D, 0x14,     // charge pump
-      0x80, 0x05, 0x01,     // clear screen
-			0x00, 0xAF,           // display on
+      0x80, 0xAE,           // display off
+			0x00, 0xD5, 0x80,     // display clock
+			0x00, 0xA8, 0x3F,     // multiplex ratio (64 - 1)
+			0x00, 0xD3, 0x00,     // display offset 0
+			0x00, 0x40, 0x00,     // start line
+			0x80, 0xA1,           // segment remap
+			0x80, 0xC8,           // com scan dir
+			0x00, 0xDA, 0x12,     // com pin hw config
+			0x00, 0x81, 0x7F,     // contrast
+			0x80, 0xA4,           // disable entire display on
+			0x80, 0xA6,           // set normal display
+			0x00, 0x8D, 0x14,     // charge pump
+			0x80, 0xAF,           // display on
   };
 	write(ssd1306->handle, init_commands, sizeof(init_commands));
+
+  uint8_t clear_commands[] = {
+    0x40,
+    0x00, 0x21, 0x00, ssd1306->width - 1,
+    0x00, 0x22, 0x00, ssd1306->height/8 - 1,
+  }
+	write(ssd1306->handle, clear_commands, sizeof(clear_commands));
+
+  uint8_t clear_data[ OLED_MAX_WIDTH ];
+  memset(clear_data, 0, OLED_MAX_WIDTH);
+  for (int16_t i = 0; i < ssd1306->height/8; i++) {
+    write(ssd1306->handle, clear_data, ssd1306->width);
+  }
+
+  uint8_t on_commands[] = {
+			0x80, 0xAF,           // display on
+  };
+	write(ssd1306->handle, on_commands, sizeof(on_commands));
+
 
   rc = 0;
 
