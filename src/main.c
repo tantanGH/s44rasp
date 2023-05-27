@@ -214,7 +214,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   pcm_buffer = malloc(sizeof(int16_t) * pcm_channels * pcm_buffer_len);
   fp = fopen(pcm_file_name, "rb");
   if (fp == NULL) {
-    printf("error: s44 file open error.\n");
+    printf("error: input pcm file open error.\n");
     goto exit;
   }
 
@@ -229,6 +229,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     pcm_freq = wav_decoder.sample_rate;
     pcm_channels = wav_decoder.channels;
     skip_offset = ofs;
+    printf("skip offset = %d\n");
   }
 
   // check data content size
