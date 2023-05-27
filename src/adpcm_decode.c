@@ -129,31 +129,33 @@ size_t adpcm_decode_exec(ADPCM_DECODE_HANDLE* adpcm, int16_t* output_buffer, uin
 
   while (source_buffer_ofs < source_buffer_len) {
 
-    uint8_t code;
-    if ((adpcm->adpcm_counter % 2) == 0) {
-      code = source_buffer[ source_buffer_ofs ] & 0x0f;
-    } else {
-      code = (source_buffer[ source_buffer_ofs ] >> 4) & 0x0f;
-    }
-
     // up sampling
     adpcm->resample_counter += adpcm->sample_rate;
     if (adpcm->resample_counter < adpcm->resample_rate) {
-      // do not increment
+
+      output_buffer[ output_buffer_ofs ++ ] = adpcm->last_estimate * 16;
+      output_buffer[ output_buffer_ofs ++ ] = adpcm->last_estimate * 16;
+
     } else {
-      if ((adpcm->adpcm_counter % 2) != 0) {
-        source_buffer_ofs++;
+
+      uint8_t code;
+      if ((adpcm->adpcm_counter % 2) == 0) {
+        code = source_buffer[ source_buffer_ofs ] & 0x0f;
+      } else {
+        code = (source_buffer[ source_buffer_ofs++ ] >> 4) & 0x0f;
       }
       adpcm->adpcm_counter++;
-      adpcm->resample_counter -= adpcm->resample_rate;
-    }
 
-    int16_t step_index = adpcm->step_index;
-    int16_t new_estimate = msm6258v_decode(code, &step_index, adpcm->last_estimate);
-    output_buffer[ output_buffer_ofs++ ] = new_estimate * 16;   // 12bit signed PCM to 16bit signed PCM
-    output_buffer[ output_buffer_ofs++ ] = new_estimate * 16;   // mono to stereo duplication
-    adpcm->step_index = step_index;
-    adpcm->last_estimate = new_estimate;
+      int16_t step_index = adpcm->step_index;
+      int16_t new_estimate = msm6258v_decode(code, &step_index, adpcm->last_estimate);
+      output_buffer[ output_buffer_ofs ++ ] = new_estimate * 16;   // 12bit signed PCM to 16bit signed PCM
+      output_buffer[ output_buffer_ofs ++ ] = new_estimate * 16;   // mono to stereo duplication
+      adpcm->step_index = step_index;
+      adpcm->last_estimate = new_estimate;
+
+      adpcm->resample_counter -= adpcm->resample_rate;
+
+    }
 
   }
 
