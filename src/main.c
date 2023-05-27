@@ -118,12 +118,52 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     goto exit;
   }
 
+  // decoders
+  ADPCM_DECODE_HANDLE adpcm_decoder = { 0 };
+  RAW_DECODE_HANDLE raw_decoder = { 0 };
+  WAV_DECODE_HANDLE wav_decoder = { 0 };
+//  YM2608_DECODE_HANDLE ym2608_decoder = { 0 };
+
+  // init adpcm (msm6258v) decoder
+  if (input_format == FORMAT_ADPCM) {
+    if (adpcm_decode_init(&adpcm_decoder) != 0) {
+      printf("error: ADPCM encoder initialization error.\n");
+      goto catch;
+    }
+  }
+
+  // init raw pcm decoder if needed
+  if (input_format == FORMAT_RAW) {
+    if (raw_decode_init(&raw_decoder, pcm_freq, pcm_channels) != 0) {
+      printf("error: PCM decoder initialization error.\n");
+      goto catch;
+    }
+  }
+
+  // init wav decoder if needed
+  if (input_format == FORMAT_WAV) {
+    if (wav_decode_init(&wav_decoder) != 0) {
+      printf("error: WAV decoder initialization error.\n");
+      goto catch;
+    }
+  }
+
+  // init adpcm (ym2608) decoder if needed
+//  if (input_format == FORMAT_YM2608) {
+//    if (ym2608_decode_init(&ym2608_decoder, pcm_freq * pcm_channels * 4, pcm_freq, pcm_channels) != 0) {
+//      printf("error: YM2608 adpcm decoder initialization error.\n");
+//      goto catch;
+//    }
+//  }
+
+  // init ALSA device
   if (snd_pcm_open(&pcm_handle, pcm_device_name != NULL ? pcm_device_name : (uint8_t*)"default", 
                     SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK) != 0) {
     printf("error: pcm device (%s) open error.\n", pcm_device_name);
     goto exit;
   }
 
+  // set ASLA PCM parameters
   if (snd_pcm_set_params(pcm_handle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, 
                           pcm_channels, pcm_freq, ALSA_SOFT_RESAMPLE, ALSA_LATENCY) != 0) {
     printf("error: pcm device setting error.\n");
@@ -138,10 +178,25 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     goto exit;
   }
 
-  fseek(fp, 0, SEEK_END);
-  size_t pcm_data_size = ftell(fp);
-  fseek(fp, 0, SEEK_SET);
+  // read header part of WAV file
+  size_t skip_offset = 0;
+  if (input_format == FORMAT_WAV) {
+    int32_t ofs = wav_decode_parse_header(&wav_decoder, fp);
+    if (ofs < 0) {
+      //printf("error: wav header parse error.\n");
+      goto catch;
+    }
+    pcm_freq = wav_decoder.sample_rate;
+    pcm_channels = wav_decoder.channels;
+    skip_offset = ofs;
+  }
 
+  // check data content size
+  fseek(fp, 0, SEEK_END);
+  size_t pcm_data_size = ftell(fp) - skip_offset;
+  fseek(fp, skip_offset, SEEK_SET);
+
+  // describe PCM file information
   printf("File name     : %s\n", pcm_file_name);
   printf("Data size     : %d [bytes]\n", pcm_data_size);
   printf("Data format   : %s\n", 

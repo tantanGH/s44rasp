@@ -91,13 +91,12 @@ static uint8_t msm6258v_encode(int16_t current_data, int16_t last_estimate, int1
 //
 //  initialize adpcm decoder handle
 //
-int32_t adpcm_decode_init(ADPCM_DECODE_HANDLE* adpcm, int32_t sample_rate, int16_t auto_clip) {
+int32_t adpcm_decode_init(ADPCM_DECODE_HANDLE* adpcm) {
 
   int32_t rc = -1;
 
-  adpcm->sample_rate = sample_rate;
-  adpcm->auto_clip = auto_clip;
-  //adpcm->half_bits = 0;
+  adpcm->sample_rate = 15625;
+  adpcm->auto_clip = 0;
 
   adpcm->step_index = 0;
   adpcm->last_estimate = 0;
