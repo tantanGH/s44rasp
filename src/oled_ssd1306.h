@@ -1,7 +1,7 @@
 #ifndef __H_SSD1306__
 #define __H_SSD1306__
 
-#define OLED_I2C_BUS  (1)
+#define OLED_I2C_BUS  "/dev/i2c-1"
 #define OLED_I2C_ADDR (0x3c)
 
 typedef struct {

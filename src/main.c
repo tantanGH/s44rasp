@@ -421,5 +421,10 @@ exit:
     ym2608_decode_close(&ym2608_decoder);
   }
 
+  // close OLED SSD1306
+  if (use_oled) {
+    oled_ssd1306_close(&ssd1306);
+  }
+
   return rc;
 }

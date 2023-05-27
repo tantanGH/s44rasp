@@ -15,14 +15,18 @@ int32_t oled_ssd1306_open(OLED_SSD1306* ssd1306, int16_t width, int16_t height) 
   ssd1306->width = width;
   ssd1306->height = height;
   
-  // init
-  if (gpioInitialise() < 0) {
-    printf("error: pigpio initialization error.\n");
+  // open i2c connection
+  ssd1306->handle = open(OLED_I2C_BUS, O_RDWR);
+  if (ssd->handle < 0) {
+    printf("error: failed to open i2c bus.\n");
     goto exit;
   }
 
-  // open i2c connection
-  ssd1306->handle = i2cOpen(OLED_I2C_BUS, OLED_I2C_ADDR, 0);
+  // set i2c slave address
+  if (ioctl(ssd1306->handle, I2C_SLAVE, OLED_I2C_ADDR) < 0)  {
+    printf("error: failed to select i2c device.\n");
+    goto exit;
+  }
 
   // send init command
   uint8_t	init_commands[] = {
@@ -41,13 +45,14 @@ int32_t oled_ssd1306_open(OLED_SSD1306* ssd1306, int16_t width, int16_t height) 
 			0x00, 0xAF,           // display on
 	};
 
-	rc = i2cWriteDevice(ssd1306->handle, init_commands, sizeof(init_commands));
-  if (rc != 0) {
-    printf("error: i2c init device error.\n");
-    goto exit;
-  }
+	write(ssd1306->handle, init_commands, sizeof(init_commands));
 
 exit:
+  if (rc != 0) {
+    close(ssd1306->handle);
+    ssd1306->handle = 0;
+  }
+
   return rc;
 }
 
@@ -55,7 +60,10 @@ exit:
 //  close OLED SSD1306 handle
 //
 void oled_ssd1306_close(OLED_SSD1306* ssd1306) {
-
+  if (ssd1306->handle != 0) {
+    close(ssd1306->handle);
+    ssd1306->handle = 0;
+  }
 }
 
 //

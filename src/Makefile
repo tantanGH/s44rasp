@@ -5,7 +5,7 @@ LD = gcc
 
 CFLAGS = -O2
 LDFLAGS =
-LIBS = -lasound -lm -lpigpio
+LIBS = -lasound -lm
 
 OBJS = adpcm_decode.o raw_decode.o wav_decode.o ym2608_decode.o oled_ssd1306.o main.o
 
