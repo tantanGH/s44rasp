@@ -10,13 +10,13 @@
 //
 //  init OLED SSD1306 handle
 //
-int32_t oled_ssd1306_open(OLED_SSD1306* ssd1306, int16_t width, int16_t height) {
+int32_t oled_ssd1306_open(OLED_SSD1306* ssd1306) {
 
   int32_t rc = -1;
 
   // baseline
-  ssd1306->width = width;
-  ssd1306->height = height;
+  ssd1306->width = = 128;
+  ssd1306->height = 64;
   
   // open i2c connection
   ssd1306->handle = open(OLED_I2C_BUS, O_RDWR);
@@ -33,25 +33,30 @@ int32_t oled_ssd1306_open(OLED_SSD1306* ssd1306, int16_t width, int16_t height) 
 
   // send init command
   uint8_t	init_commands[] = {
-    0x80, 0xAE,           // display off
-    0x00, 0xD5, 0x80,     // display clock
-    0x00, 0xA8, 0x3F,     // multiplex ratio (64 - 1)
-    0x00, 0xD3, 0x00,     // display offset 0
-    0x00, 0x40, 0x00,     // start line
-    0x80, 0xA1,           // segment remap
-    0x80, 0xC8,           // com scan dir
-    0x00, 0xDA, 0x12,     // com pin hw config
-    0x00, 0x81, 0x7F,     // contrast
-    0x80, 0xA4,           // disable entire display on
-    0x80, 0xA6,           // set normal display
-    0x00, 0x8D, 0x14,     // charge pump
-//    0x80, 0xAF,           // display on
+    0x00,                 // command stream
+    0xAE,                 // display off
+    0x8D, 0x14,           // charge pump
+    0xA8, 0x3F,           // multiplex ratio (64 - 1)
+    0x40,                 // start line
+    0xA0,                 // segment remap low
+    0xC8,                 // com scan dir
+    0x81, 0x7F,           // contrast
+    0xA4,                 // disable entire display on
+    0xA6,                 // set normal display 
+    0xD5, 0x80,           // display clock
+    0x2E,                 // deactivate scroll
+    0x20, 0x10            // memory addressing mode
+    0x21, 0x00, 0x7f,     // column range
+    0x22, 0x00, 0x07,     // page range
+    0xD3, 0x00,           // display offset 0
+    0xDA, 0x12,           // com pin hw config
+    0xAF,                 // display on
   };
 	write(ssd1306->handle, init_commands, sizeof(init_commands));
-
+/*
   uint8_t clear_commands[] = {
-    0x21, 0x00, ssd1306->width - 1,
-    0x22, 0x00, ssd1306->height/8 - 1,
+    0x00, 0x21, 0x00, ssd1306->width - 1,
+    0x00, 0x22, 0x00, ssd1306->height/8 - 1,
     0x40,
   };
 	write(ssd1306->handle, clear_commands, sizeof(clear_commands));
@@ -66,7 +71,7 @@ int32_t oled_ssd1306_open(OLED_SSD1306* ssd1306, int16_t width, int16_t height) 
     0x80, 0xAF,           // display on
   };
 	write(ssd1306->handle, on_commands, sizeof(on_commands));
-
+*/
   rc = 0;
 
 exit:
