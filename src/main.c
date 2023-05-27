@@ -94,44 +94,30 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   int16_t input_format = FORMAT_ADPCM;
   int32_t pcm_freq = 15625;
   int16_t pcm_channels = 1;
-  int32_t output_freq = 44100;
-  int16_t output_channels = 2;
   if (stricmp(".pcm", pcm_file_exp) == 0) {
     input_format = FORMAT_ADPCM;
     pcm_freq = 15625;
     pcm_channels = 1;
-    output_freq = 48000;
-    output_channels = 1;
   } else if (stricmp(".s32", pcm_file_exp) == 0) {
     input_format = FORMAT_RAW;
     pcm_freq = 32000;
     pcm_channels = 2;
-    output_freq = 32000;
-    output_channels = 2;
   } else if (stricmp(".s44", pcm_file_exp) == 0) {
     input_format = FORMAT_RAW;
     pcm_freq = 44100;
     pcm_channels = 2;
-    output_freq = 44100;
-    output_channels = 2;
   } else if (stricmp(".s48", pcm_file_exp) == 0) {
     input_format = FORMAT_RAW;
     pcm_freq = 48000;
     pcm_channels = 2;
-    output_freq = 48000;
-    output_channels = 2;
   } else if (stricmp(".m32", pcm_file_exp) == 0) {
     input_format = FORMAT_RAW;
     pcm_freq = 32000;
     pcm_channels = 1;
-    output_freq = 32000;
-    output_channels = 2;
   } else if (stricmp(".m44", pcm_file_exp) == 0) {
     input_format = FORMAT_RAW;
     pcm_freq = 44100;
     pcm_channels = 1;
-    output_freq = 44100;
-    output_channels = 2;
   } else if (stricmp(".m48", pcm_file_exp) == 0) {
     input_format = FORMAT_RAW;
     pcm_freq = 48000;
@@ -228,7 +214,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
 
   // allocate pcm buffer
   size_t pcm_buffer_len = pcm_freq * 1; // 1 sec
-  pcm_buffer = (int16_t*)malloc(sizeof(int16_t) * pcm_channels * pcm_buffer_len);
+  pcm_buffer = (int16_t*)malloc(sizeof(int16_t) * 2 * pcm_buffer_len);
 
   // allocate file read buffer
   size_t fread_buffer_len = input_format == FORMAT_ADPCM ? 15625 : pcm_channels * pcm_buffer_len;
@@ -289,7 +275,16 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
       printf("error: pcm device setting error. (%s)\n", snd_strerror(alsa_rc));
       goto exit;
     }
-    
+  } else {
+    if ((alsa_rc = snd_pcm_set_params(pcm_handle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, 
+                            pcm_channels, pcm_freq, 1, pcm_latency)) != 0) {
+      printf("error: pcm device setting error. (%s)\n", snd_strerror(alsa_rc));
+      goto exit;
+    }
+  }
+
+  if (input_format == FORMAT_ADPCM) {
+        
     snd_pcm_hw_params_t* pcm_params = NULL;
     
     snd_pcm_hw_params_malloc(&pcm_params);
@@ -299,13 +294,6 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     snd_pcm_hw_params_set_rate_near(pcm_handle, pcm_params, &desired_rate, 0);
     snd_pcm_hw_params(pcm_handle, pcm_params);
     snd_pcm_hw_params_free(pcm_params);
-
-  } else {
-    if ((alsa_rc = snd_pcm_set_params(pcm_handle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, 
-                            pcm_channels, pcm_freq, 1, pcm_latency)) != 0) {
-      printf("error: pcm device setting error. (%s)\n", snd_strerror(alsa_rc));
-      goto exit;
-    }
   }
 
   // sigint handler
