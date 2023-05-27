@@ -53,7 +53,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   ADPCM_DECODE_HANDLE adpcm_decoder = { 0 };
   RAW_DECODE_HANDLE raw_decoder = { 0 };
   WAV_DECODE_HANDLE wav_decoder = { 0 };
-//  YM2608_DECODE_HANDLE ym2608_decoder = { 0 };
+  YM2608_DECODE_HANDLE ym2608_decoder = { 0 };
 
   printf("s44rasp - X68k ADPCM/PCM/WAV player for Raspberry Pi version " PROGRAM_VERSION " by tantan\n");
 
@@ -180,7 +180,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
 
   // init adpcm (ym2608) decoder if needed
   if (input_format == FORMAT_YM2608) {
-    if (ym2608_decode_init(&ym2608_decoder, pcm_freq, pcm_channels) != 0) {
+    if (ym2608_decode_open(&ym2608_decoder, pcm_freq, pcm_channels) != 0) {
       printf("error: YM2608 adpcm decoder initialization error.\n");
       goto exit;
     }
