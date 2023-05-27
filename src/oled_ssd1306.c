@@ -205,12 +205,14 @@ void oled_ssd1306_print(OLED_SSD1306* ssd1306, int16_t pos_x, int16_t pos_y, uin
     0x00,                 // command stream
     0x21, pos_x, 0x7f,    // column range
     0x22, pos_y, 0x07,    // page range
-    0x40,
   };
 	write(ssd1306->handle, commands, sizeof(commands));
 
+  uint8_t data[7];
+  data[0] = 0x40;
+  memcpy(data+1, font6x8_data + 6 * (mes[i] - 0x20), 6);
   for (int16_t i = 0; i < mes_len; i++) {
-    write(ssd1306->handle, font6x8_data + 6 * (mes[i] - 0x20), 6);
+    write(ssd1306->handle, data, 7);
   }
   
 }
