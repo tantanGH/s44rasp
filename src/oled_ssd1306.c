@@ -45,7 +45,7 @@ int32_t oled_ssd1306_open(OLED_SSD1306* ssd1306, int16_t width, int16_t height) 
     0x80, 0xA4,           // disable entire display on
     0x80, 0xA6,           // set normal display
     0x00, 0x8D, 0x14,     // charge pump
-    0x80, 0xAF,           // display on
+//    0x80, 0xAF,           // display on
   };
 	write(ssd1306->handle, init_commands, sizeof(init_commands));
 
