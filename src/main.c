@@ -206,27 +206,6 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
 //    }
 //  }
 
-  // init ALSA device
-  if ((alsa_rc = snd_pcm_open(&pcm_handle, pcm_device_name != NULL ? pcm_device_name : (uint8_t*)"default", 
-                    SND_PCM_STREAM_PLAYBACK, 0)) != 0) {
-    printf("error: pcm device (%s) open error. (%s)\n", pcm_device_name, snd_strerror(alsa_rc));
-    goto exit;
-  }
-
-  // set ALSA PCM parameters
-//  snd_pcm_hw_params_alloca(&pcm_params);
-//  snd_pcm_hw_params_any(pcm_handle, pcm_params);
-//  snd_pcm_hw_params_set_access(pcm_handle, pcm_params, SND_PCM_ACCESS_RW_INTERLEAVED);
-//  snd_pcm_hw_params_set_format(pcm_handle, pcm_params, SND_PCM_FORMAT_S16_LE);
-//  snd_pcm_hw_params_set_channels(pcm_handle, pcm_params, pcm_channels);
-//  snd_pcm_hw_params_set_rate(pcm_handle, pcm_params, pcm_freq, 0);
-//  snd_pcm_hw_params(pcm_handle, pcm_params);
-  if ((alsa_rc = snd_pcm_set_params(pcm_handle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, 
-                          pcm_channels, pcm_freq, 1, pcm_latency)) != 0) {
-    printf("error: pcm device setting error. (%s)\n", snd_strerror(alsa_rc));
-    goto exit;
-  }
-
   /* Allocate buffer to hold single period */
 //  snd_pcm_hw_params_get_period_size(pcm_params, &num_frames, NULL);
 //  fprintf(stderr,"# frames in a period: %d\n", num_frames);
@@ -256,6 +235,27 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   fseek(fp, 0, SEEK_END);
   size_t pcm_data_size = ftell(fp) - skip_offset;
   fseek(fp, skip_offset, SEEK_SET);
+
+  // init ALSA device
+  if ((alsa_rc = snd_pcm_open(&pcm_handle, pcm_device_name != NULL ? pcm_device_name : (uint8_t*)"default", 
+                    SND_PCM_STREAM_PLAYBACK, 0)) != 0) {
+    printf("error: pcm device (%s) open error. (%s)\n", pcm_device_name, snd_strerror(alsa_rc));
+    goto exit;
+  }
+
+  // set ALSA PCM parameters
+//  snd_pcm_hw_params_alloca(&pcm_params);
+//  snd_pcm_hw_params_any(pcm_handle, pcm_params);
+//  snd_pcm_hw_params_set_access(pcm_handle, pcm_params, SND_PCM_ACCESS_RW_INTERLEAVED);
+//  snd_pcm_hw_params_set_format(pcm_handle, pcm_params, SND_PCM_FORMAT_S16_LE);
+//  snd_pcm_hw_params_set_channels(pcm_handle, pcm_params, pcm_channels);
+//  snd_pcm_hw_params_set_rate(pcm_handle, pcm_params, pcm_freq, 0);
+//  snd_pcm_hw_params(pcm_handle, pcm_params);
+  if ((alsa_rc = snd_pcm_set_params(pcm_handle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, 
+                          pcm_channels, pcm_freq, 1, pcm_latency)) != 0) {
+    printf("error: pcm device setting error. (%s)\n", snd_strerror(alsa_rc));
+    goto exit;
+  }
 
   // describe PCM file information
   printf("File name     : %s\n", pcm_file_name);
