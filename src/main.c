@@ -207,7 +207,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   fseek(fp, skip_offset, SEEK_SET);
 
   // allocate pcm buffer
-  size_t pcm_buffer_len = pcm_freq * 2; // 2 sec
+  size_t pcm_buffer_len = pcm_freq * 1; // 1 sec
   pcm_buffer = (int16_t*)malloc(sizeof(int16_t) * pcm_channels * pcm_buffer_len);
 
   // describe PCM file information
