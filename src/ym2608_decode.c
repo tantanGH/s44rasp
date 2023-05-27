@@ -7,7 +7,6 @@
 //  MSM6258V ADPCM constant tables
 //
 static const int16_t step_adjust[] = { -1, -1, -1, -1, 2, 4, 6, 8, -1, -1, -1, -1, 2, 4, 6, 8 };
-//static const int16_t step_adjust[] = { 57, 57, 57, 57, 77, 102, 128, 153, 57, 57, 57, 57, 77, 102, 128, 153 };
 
 static const int16_t step_size[] = { 
          16,   17,   19,   21,   23,   25,   28,   31,   34,   37,   41,   45,   50,   55,   60,   66,
@@ -20,7 +19,7 @@ static const int16_t step_size[] = {
 //
 //  YM2608 ADPCM decode
 //
-static inline int16_t ym2608_decode(uint8_t code, int16_t* step_index, int16_t last_data) {
+static inline int16_t ym2608_decode_orig(uint8_t code, int16_t* step_index, int16_t last_data) {
 
   int16_t si = *step_index;
   int16_t ss = step_size[ si ];
@@ -50,6 +49,27 @@ static inline int16_t ym2608_decode(uint8_t code, int16_t* step_index, int16_t l
     si = 68;
   }
   *step_index = si;
+
+  return estimate;
+}
+
+//
+//  YM2608 ADPCM decode
+//
+static inline int16_t ym2608_decode(uint8_t code, int16_t* step_size, int16_t last_data) {
+
+  static const int16_t step_table[] = { 57, 57, 57, 57, 77, 102, 128, 153 };
+
+  int16_t sign = code & 0x08;
+  int16_t delta = code & 0x07;
+  int16_t ss = *step_size;
+  int32_t diff = (( 1 + ( delta * 2 )) * ss ) / 64;
+ 
+  int16_t next_step = step_table[ delta ] * ss / 64;
+  *step_size = (next_step < 127) ? 127 : (next_step > 24576) ? 24576 : next_step;
+
+  int16_t estimate = (code & 0x08) ? last_estimate - diff : last_estimate + diff;
+  estimate = (estimate > 32767) ? 32767 : (estimate < -32768) ? -32768 : estimate;
 
   return estimate;
 }
@@ -190,6 +210,9 @@ size_t ym2608_decode_exec(YM2608_DECODE_HANDLE* ym2608, int16_t* output_buffer, 
         ym2608->resample_counter -= ym2608->resample_rate;
 
       }
+
+    } else {
+
 
     }
 
