@@ -289,6 +289,17 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
       printf("error: pcm device setting error. (%s)\n", snd_strerror(alsa_rc));
       goto exit;
     }
+    
+    snd_pcm_hw_params_t* pcm_params = NULL;
+    
+    snd_pcm_hw_params_malloc(&pcm_params);
+    snd_pcm_hw_params_any(pcm_handle, pcm_params);
+
+    unsigned int desired_rate = 48000;
+    snd_pcm_hw_params_set_rate_near(pcm_handle, pcm_params, &desired_rate, 0);
+    snd_pcm_hw_params(pcm_handle, pcm_params);
+    snd_pcm_hw_params_free(pcm_params);
+
   } else {
     if ((alsa_rc = snd_pcm_set_params(pcm_handle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, 
                             pcm_channels, pcm_freq, 1, pcm_latency)) != 0) {
