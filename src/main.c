@@ -20,13 +20,13 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   snd_pcm_t* pcm_handle = NULL;
   int16_t* pcm_buffer = NULL; 
   uint8_t* pcm_file_name = NULL;
-  uint8_t* pcm_device = NULL;
+  uint8_t* pcm_device_name = NULL;
   FILE* fp = NULL;
 
   for (int16_t i = 1; i < argc; i++) {
     if (argv[i][0] == '-' && strlen(argv[i]) >= 2) {
       if (argv[i][1] == 'd' && i+1 < argc) {
-        pcm_device = argv[ i + 1 ];
+        pcm_device_name = argv[ i + 1 ];
         i++;
       } else if (argv[i][1] == 'h') {
         show_help_message();
