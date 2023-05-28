@@ -23,9 +23,11 @@ typedef struct {
   int32_t resample_rate;
   size_t resample_counter;
 
+  int16_t up_sampling;
+
 } YM2608_DECODE_HANDLE;
 
-int32_t ym2608_decode_open(YM2608_DECODE_HANDLE* ym2608, int32_t sample_rate, int16_t channels);
+int32_t ym2608_decode_open(YM2608_DECODE_HANDLE* ym2608, int32_t sample_rate, int16_t channels, int16_t up_sampling);
 void ym2608_decode_close(YM2608_DECODE_HANDLE* ym2608);
 size_t ym2608_decode_exec(YM2608_DECODE_HANDLE* ym2608, int16_t* output_buffer, uint8_t* source_buffer, size_t source_buffer_len);
 

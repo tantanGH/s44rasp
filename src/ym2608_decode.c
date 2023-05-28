@@ -76,7 +76,7 @@ static inline int16_t ym2608_decode(uint8_t code, int16_t* step_size, int16_t la
 //
 //  initialize ym2608 decoder handle
 //
-int32_t ym2608_decode_open(YM2608_DECODE_HANDLE* ym2608, int32_t sample_rate, int16_t channels) {
+int32_t ym2608_decode_open(YM2608_DECODE_HANDLE* ym2608, int32_t sample_rate, int16_t channels, int16_t up_sampling) {
 
   int32_t rc = -1;
 
@@ -95,6 +95,8 @@ int32_t ym2608_decode_open(YM2608_DECODE_HANDLE* ym2608, int32_t sample_rate, in
 
   ym2608->resample_rate = 48000;
   ym2608->resample_counter = 0;
+
+  ym2608->up_sampling = up_sampling;
 
   rc = 0;
 
@@ -117,7 +119,7 @@ size_t ym2608_decode_exec(YM2608_DECODE_HANDLE* ym2608, int16_t* output_buffer, 
   size_t source_buffer_ofs = 0;
   size_t output_buffer_ofs = 0;
 
-  if (ym2608->sample_rate < 44100) {
+  if (ym2608->sample_rate < 44100 || ym2608->up_sampling) {
 
     if (ym2608->channels == 1) {
     
@@ -132,7 +134,7 @@ size_t ym2608_decode_exec(YM2608_DECODE_HANDLE* ym2608, int16_t* output_buffer, 
       while (source_buffer_ofs < source_buffer_len) {
 
         uint8_t code;
-        if ((ym2608->adpcm_counter % 2) == 0) {
+        if ((ym2608->adpcm_counter % 2) != 0) {
           code = source_buffer[ source_buffer_ofs ] & 0x0f;
         } else {
           code = (source_buffer[ source_buffer_ofs++ ] >> 4) & 0x0f;
