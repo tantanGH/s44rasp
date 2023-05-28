@@ -93,11 +93,15 @@ Raspberry Pi の 40pin GPIO コネクタにポン付けできる DAC HAT が数�
 
 この場合 card 0 として認識されているので、s44rasp で利用するには以下のように指定すればok。
 
-        s44rasp -d hw:0,0 hogehoge.s44
+        s44rasp -d hw:0,0 hogehoge.s48
 
 もしくは特にdefaultの出力先をALSAに登録していなければ、指定なしでもok
 
-        s44rasp hogehoge.s44
+        s44rasp hogehoge.s48
+
+注意：DACによっては44.1kHzの再生をサポートしていないことがあります。その場合は48kHzにアップサンプリング(`-u`)する必要がありますが、若干音質が低下する恐れがあります。
+
+        s44rasp -u hogehoge.s44
 
 ---
 
@@ -114,4 +118,8 @@ s44rasp は標準で SSD1306コントローラを使った 128x64 OLED ディス
 OLED表示を行う場合は `-o` オプションをつけて実行してください。
 
         s44rasp -o -d hw:0,0 hogehoge.s44
+
+
+
+https://github.com/tantanGH/s44rasp/assets/121137457/5f559c0e-38c9-4ff0-af5c-054fc20e795a
 
