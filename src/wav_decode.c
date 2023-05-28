@@ -163,7 +163,7 @@ int32_t wav_decode_parse_header(WAV_DECODE_HANDLE* wav, FILE* fp) {
   buf[4] = '\0';
   while (strcmp(buf, "data") != 0) {
     if (feof(fp) || ferror(fp)) {
-      printf("error: wav Shubchunk2 read error.\n");
+      printf("error: wav Shubchunk2 read error. (%s)\n", buf);
       goto exit;
     }
     size_t bytes_junk = fread(buf, sizeof(uint8_t), 4, fp);
