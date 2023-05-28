@@ -91,6 +91,19 @@ exit:
 //
 void oled_ssd1306_close(OLED_SSD1306* ssd1306) {
   if (ssd1306->handle != 0) {
+
+    uint8_t clear_commands[] = {
+      0x00,                 // command stream
+      0xb0,                 // set page start address
+      0x21, 0x00, 0x7f,     // column range
+    };
+    write(ssd1306->handle, clear_commands, sizeof(clear_commands));
+
+    uint8_t clear_data[] = { 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, };
+    for (int16_t i = 0; i < ssd1306->height; i++) {
+      write(ssd1306->handle, clear_data, sizeof(clear_data));
+    }
+
     close(ssd1306->handle);
     ssd1306->handle = 0;
   }
