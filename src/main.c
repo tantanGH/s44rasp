@@ -231,9 +231,9 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   if (use_oled) {
     static uint8_t mes[128];
     uint8_t* c = strrchr(pcm_file_name, '/');
-    sprintf(mes, "FILE: %s", c != NULL ? c+1 : pcm_file_name);
+    sprintf(mes, "  FILE: %s", c != NULL ? c+1 : pcm_file_name);
     oled_ssd1306_print(&ssd1306, 0, 0, mes);
-    sprintf(mes, "SIZE: %'d", pcm_data_size);
+    sprintf(mes, "  SIZE: %'d", pcm_data_size);
     oled_ssd1306_print(&ssd1306, 0, 1, mes);
     sprintf(mes, "FORMAT: %s", 
       input_format == FORMAT_RAW ? "RAW" : 
@@ -241,12 +241,12 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
       input_format == FORMAT_YM2608 ? "YM2608" :
       "ADPCM");
     oled_ssd1306_print(&ssd1306, 0, 2, mes);
-    sprintf(mes, "FREQ: %d [Hz]", pcm_freq);
+    sprintf(mes, "  FREQ: %d [Hz]", pcm_freq);
     oled_ssd1306_print(&ssd1306, 0, 3, mes);
-    sprintf(mes, "CHANNEL: %s", pcm_channels == 1 ? "mono" : "stereo");
+    sprintf(mes, "    CH: %s", pcm_channels == 1 ? "mono" : "stereo");
     oled_ssd1306_print(&ssd1306, 0, 4, mes);
-    oled_ssd1306_print(&ssd1306, 0, 5, "L:");
-    oled_ssd1306_print(&ssd1306, 0, 6, "R:");
+    oled_ssd1306_print(&ssd1306, 0, 6, "L:");
+    oled_ssd1306_print(&ssd1306, 0, 7, "R:");
   }
 
   // describe PCM file information
@@ -342,6 +342,10 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
           goto exit;
         }
       }
+      if (use_oeld) {
+        oeld_ssd1306_show_meter(&ssd1306, 2, 6, pcm_buffer[0], 0);
+        oeld_ssd1306_show_meter(&ssd1306, 2, 7, pcm_buffer[1], 0);
+      }
       printf("\r%d/%d (%4.2f%%)", fread_len, pcm_data_size, fread_len * 100.0 / pcm_data_size);
       fflush(stdout);
     } while (fread_len < pcm_data_size && abort_flag == 0);
@@ -366,6 +370,10 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
           printf("error: fatal pcm data write error.\n");
           goto exit;
         }
+      }
+      if (use_oeld) {
+        oeld_ssd1306_show_meter(&ssd1306, 2, 6, pcm_buffer[0], 0);
+        oeld_ssd1306_show_meter(&ssd1306, 2, 7, pcm_buffer[1], 0);
       }
       printf("\r%d/%d (%4.2f%%)", fread_len * sizeof(int16_t), pcm_data_size, fread_len * sizeof(int16_t) * 100.0 / pcm_data_size);
       fflush(stdout);
