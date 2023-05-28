@@ -313,7 +313,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   //printf("fread_buffer_len = %d\n", fread_buffer_len);
 
   // allocate ALSA pcm buffer
-  size_t pcm_buffer_len = 2 * (48000 * 2 : pcm_freq) * 1;  // 1 sec (adpcm=2sec)
+  size_t pcm_buffer_len = 2 * ((pcm_freq < 44100 || up_sampling) ? 48000 * 2 : pcm_freq ) * 1;  // 1 sec (adpcm=2sec)
   pcm_buffer = (int16_t*)malloc(sizeof(int16_t) * pcm_buffer_len);            // 16/24bit & stereo ... fixed
   //printf("pcm_buffer_len = %d\n", pcm_buffer_len);
 
@@ -324,19 +324,11 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     goto exit;
   }
 
-  // in case of 15.6kHz or 32kHz, upscale to 48kHz
-  if (pcm_freq == 44100 && use_24bit) {
-    if ((alsa_rc = snd_pcm_set_params(pcm_handle, SND_PCM_FORMAT_S24_LE, SND_PCM_ACCESS_RW_INTERLEAVED, 2,
-                                      pcm_freq, 1, pcm_latency)) != 0) {
-      printf("error: pcm device setting error. (%s)\n", snd_strerror(alsa_rc));
-      goto exit;
-    }
-  } else {
-    if ((alsa_rc = snd_pcm_set_params(pcm_handle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, 2,
-                            (pcm_freq < 44100) ? 48000 : pcm_freq, 1, pcm_latency)) != 0) {
-      printf("error: pcm device setting error. (%s)\n", snd_strerror(alsa_rc));
-      goto exit;
-    }
+// in case of 15.6kHz or 32kHz, upscale to 48kHz
+  if ((alsa_rc = snd_pcm_set_params(pcm_handle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, 2,
+                          (pcm_freq < 44100 || up_sampling) ? 48000 : pcm_freq, 1, pcm_latency)) != 0) {
+    printf("error: pcm device setting error. (%s)\n", snd_strerror(alsa_rc));
+    goto exit;
   }
 
   // sigint handler
