@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include "ym2608_decode.h"
 
+/*
 //
 //  MSM6258V ADPCM constant tables
 //
@@ -19,7 +20,7 @@ static const int16_t step_size[] = {
 //
 //  YM2608 ADPCM decode
 //
-static inline int16_t ym2608_decode_orig(uint8_t code, int16_t* step_index, int16_t last_data) {
+static inline int16_t ym2608_decode(uint8_t code, int16_t* step_index, int16_t last_data) {
 
   int16_t si = *step_index;
   int16_t ss = step_size[ si ];
@@ -52,7 +53,9 @@ static inline int16_t ym2608_decode_orig(uint8_t code, int16_t* step_index, int1
 
   return estimate;
 }
+*/
 
+/*
 //
 //  YM2608 ADPCM decode
 //
@@ -72,6 +75,7 @@ static inline int16_t ym2608_decode(uint8_t code, uint32_t* step_size, int16_t l
 
   return estimate;
 }
+*/
 
 //
 //  initialize ym2608 decoder handle
@@ -97,6 +101,14 @@ int32_t ym2608_decode_open(YM2608_DECODE_HANDLE* ym2608, int32_t sample_rate, in
   ym2608->resample_counter = 0;
 
   ym2608->up_sampling = up_sampling;
+
+  ym2608->x1_addr = ym2608_conv_table;
+  ym2608->lx1_addr = ym2608_conv_table;
+  ym2608->rx1_addr = ym2608_conv_table;
+
+  ym2608->back = 0;
+  ym2608->lback = 0;
+  ym2608->rback = 0;
 
   rc = 0;
 
@@ -162,22 +174,20 @@ size_t ym2608_decode_exec(YM2608_DECODE_HANDLE* ym2608, int16_t* output_buffer, 
 
     if (ym2608->channels == 1) {
 
+      int32_t back = ym2608->back;
+
       while (source_buffer_ofs < source_buffer_len) {
 
-        uint8_t code;
-        if ((ym2608->adpcm_counter % 2) == 0) {
-          code = source_buffer[ source_buffer_ofs ] & 0x0f;
-        } else {
-          code = (source_buffer[ source_buffer_ofs++ ] >> 4) & 0x0f;
-        }
-        ym2608->adpcm_counter++;
+        uint8_t codes = source_buffer[ source_buffer_ofs ++ ];
+        ym2608->x1 += (int16_t)(codes << 3);
 
-        uint32_t step_size = ym2608->step_size;
-        int32_t new_estimate = ym2608_decode(code, &step_size, ym2608->last_estimate);
-        output_buffer[ output_buffer_ofs ++ ] = new_estimate;
-        output_buffer[ output_buffer_ofs ++ ] = new_estimate;   // mono to stereo duplication
-        ym2608->step_size = step_size;
-        ym2608->last_estimate = new_estimate;
+        back += (int16_t)((ym2608->x1[0] << 8) + ym2608->x1[1]);
+        output_buffer[ output_buffer_ofs ++ ] = back;
+
+        back += (int16_t)((ym2608->x1[2] << 8) + ym2608->x1[3]);
+        output_buffer[ output_buffer_ofs ++ ] = back;
+
+        ym2608->x1 += (int32_t)((ym2608->x1[4] << 24) + (ym2608->x1[5] << 16) + (ym2608->x1[6] << 8) + ym2608->x1[7]);
 
       }
 
