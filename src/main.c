@@ -18,22 +18,27 @@
 // application
 #include "s44rasp.h"
 
+// abort control
 static int16_t abort_flag = 0;
 
+//
+//  sigint handler
+//
 static void sigint_handler(int signal) {
   if (signal == SIGINT) {
     abort_flag = 1;
   }
 }
 
+//
+//  show help message
+//
 static void show_help_message() {
   printf("usage: s44rasp [options] <input-file[.pcm|.sXX|.mXX|.aXX|.nXX|.wav]>\n");
   printf("options:\n");
   printf("     -d hw:x,y ... ALSA PCM device name (i.e. hw:3,0)\n");
   printf("     -o        ... enable OLED(SSD1306) display\n");
   printf("     -u        ... upsampling to 48kHz (default for 15.6kHz/32kHz source)\n");
-//  printf("     -s <serial-device>  ... serial device name (i.e. /dev/serial0)\n");
-//  printf("     -l <latency>        ... ALSA PCM latency in msec (default:100ms)\n");
   printf("     -f        ... supported format check\n");
   printf("     -h        ... show help message\n");
 }
@@ -43,16 +48,20 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   // default exit code
   int32_t rc = -1;
 
-  // pcm attribs
+  // alsa
   snd_pcm_t* pcm_handle = NULL;
+  uint32_t alsa_latency = ALSA_LATENCY;
+  int32_t alsa_rc = 0;
+
+  // pcm attribs
   int16_t* pcm_buffer = NULL; 
   void* fread_buffer = NULL;
   uint8_t* pcm_file_name = NULL;
   uint8_t* pcm_device_name = NULL;
-  uint32_t pcm_latency = 50000;
   int16_t up_sampling = 0;
   int16_t pcm_format_check = 0;
-  int32_t alsa_rc = 0;
+
+  // input file handle
   FILE* fp = NULL;
 
   // decoders
@@ -73,7 +82,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
         pcm_device_name = argv[ i + 1 ];
         i++;
       } else if (argv[i][1] == 'l' && i+1 < argc) {
-        pcm_latency = atoi(argv[ i + 1 ]);
+        alsa_latency = atoi(argv[ i + 1 ]);
         i++;
       } else if (argv[i][1] == 'f') {
         pcm_format_check = 1;
@@ -262,8 +271,8 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   size_t pcm_data_size = ftell(fp) - skip_offset;
   fseek(fp, skip_offset, SEEK_SET);
 
-  // dummy read for disk cache fill
-  size_t dummy_read_size = pcm_freq * 2 * 8;
+  // dummy read for disk cache to avoid buffer underrun
+  size_t dummy_read_size = pcm_freq * 2 * 2 * 8;
   uint8_t* dummy_buffer = malloc(dummy_read_size);
   fread(dummy_buffer, sizeof(uint8_t), dummy_read_size, fp);
   free(dummy_buffer);
@@ -272,21 +281,27 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   // OLED information display
   if (use_oled) {
     static uint8_t mes[128];
+
     uint8_t* c = strrchr(pcm_file_name, '/');
     sprintf(mes, "  FILE: %s", c != NULL ? c+1 : pcm_file_name);
     oled_ssd1306_print(&ssd1306, 0, 0, mes);
+
     sprintf(mes, "  SIZE: %'d", pcm_data_size);
     oled_ssd1306_print(&ssd1306, 0, 1, mes);
+
     sprintf(mes, "FORMAT: %s", 
       input_format == FORMAT_RAW ? "RAW" : 
       input_format == FORMAT_WAV ? "WAV" :
       input_format == FORMAT_YM2608 ? "YM2608" :
       "ADPCM");
     oled_ssd1306_print(&ssd1306, 0, 2, mes);
+
     sprintf(mes, "  FREQ: %d [Hz]", pcm_freq);
     oled_ssd1306_print(&ssd1306, 0, 3, mes);
+
     sprintf(mes, "    CH: %s", pcm_channels == 1 ? "mono" : "stereo");
     oled_ssd1306_print(&ssd1306, 0, 4, mes);
+
     oled_ssd1306_print(&ssd1306, 0, 6, "L:");
     oled_ssd1306_print(&ssd1306, 0, 7, "R:");
   }
@@ -359,7 +374,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
 
   // in case of 15.6kHz or 32kHz, upscale to 48kHz
   if ((alsa_rc = snd_pcm_set_params(pcm_handle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, 2,
-                          (pcm_freq < 44100 || up_sampling) ? 48000 : pcm_freq, 1, pcm_latency)) != 0) {
+                          (pcm_freq < 44100 || up_sampling) ? 48000 : pcm_freq, 1, alsa_latency)) != 0) {
     printf("error: pcm device setting error. (%s)\n", snd_strerror(alsa_rc));
     goto exit;
   }

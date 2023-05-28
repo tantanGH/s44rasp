@@ -8,6 +8,8 @@
 #define FORMAT_WAV    (2)
 #define FORMAT_YM2608 (3)
 
+#define ALSA_LATENCY (50000)
+
 #define stricmp strcasecmp
 
 #endif
