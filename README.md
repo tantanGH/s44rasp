@@ -101,7 +101,7 @@ s44rasp でこの種の USB-DAC を利用するには、USB端子にDACを接続
 
 ## Hi-Fi DAC HAT の利用
 
-Raspberry Pi の 40pin GPIO コネクタにポン付けできる DAC HAT が数多く市販されています。特にバーブラウン社製のPCM51xxチップを使ったものは定番です。
+Raspberry Pi の 40pin GPIO コネクタにポン付けできる DAC HAT が数多く市販されています。特に TI PCM51xx チップを使ったものは定番です。
 数千円の出費でラズパイの出力音質を劇的に向上させることが可能な上、ラズパイと一体化できて場所もとらずお勧めです。自分は InnoMaker 製のものを使っています。
 
 [InnoMaker Hi-Fi DAC CAP](https://www.amazon.co.jp/dp/B07TFHNPCB/)
