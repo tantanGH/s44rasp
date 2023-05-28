@@ -22,7 +22,7 @@ Raspberry Pi OS 上で動作する、主にX68k向けのPCM曲データを再生
 - .n32/.n44/.n48 ... YM2608 4bit-16bit ADPCM mono
 - .wav ... Windows WAV 16bit Raw PCM (little endian) stereo/mono
 
-48kHzより上の周波数のデータには対応していません。
+48kHzより上の周波数のデータには対応していません。15.6kHz/32kHzのデータは48kHzにアップサンプリングされます。
 
 ---
 
@@ -34,9 +34,10 @@ Raspberry Pi OS 上で動作する、主にX68k向けのPCM曲データを再生
 
         sudo apt get -y libasound2-dev
 
-このリポジトリを clone します。
+このリポジトリを clone してビルドします。
 
         cd
+        mkdir oss
         cd oss
         git clone https://github.com/tantanGH/s44rasp
         cd src
