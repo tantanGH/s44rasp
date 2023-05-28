@@ -291,9 +291,9 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
 
   // allocate file read buffer
   size_t fread_buffer_len = 
-    input_format == FORMAT_ADPCM  ? pcm_channels * pcm_freq * 1 / 25 :       // 2000 / 5 = 400 msec
-    input_format == FORMAT_YM2608 ? pcm_channels * pcm_freq * 1 / 4 / 5 :    // 1000 / 5 = 200 msec 
-                                    pcm_channels * pcm_freq * 1 / 5;         // 1000 / 5 = 200 msec
+    input_format == FORMAT_ADPCM  ? pcm_channels * pcm_freq * 1 / 25 :       // 2000 / 5  = 400 msec
+    input_format == FORMAT_YM2608 ? pcm_channels * pcm_freq * 1 / 4 / 10 :   // 1000 / 10 = 100 msec 
+                                    pcm_channels * pcm_freq * 1 / 10;        // 1000 / 10 = 100 msec
 
   fread_buffer = malloc(input_format == FORMAT_ADPCM ? sizeof(uint8_t) * fread_buffer_len :
                                                        sizeof(int16_t) * fread_buffer_len);
