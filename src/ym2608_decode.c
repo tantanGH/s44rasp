@@ -191,6 +191,8 @@ size_t ym2608_decode_exec(YM2608_DECODE_HANDLE* ym2608, int16_t* output_buffer, 
 
       }
 
+      ym2608->back = back;
+
     } else {
 
 
