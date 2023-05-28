@@ -102,9 +102,9 @@ int32_t ym2608_decode_open(YM2608_DECODE_HANDLE* ym2608, int32_t sample_rate, in
 
   ym2608->up_sampling = up_sampling;
 
-  ym2608->x1_addr = ym2608_conv_table;
-  ym2608->lx1_addr = ym2608_conv_table;
-  ym2608->rx1_addr = ym2608_conv_table;
+  ym2608->x1 = ym2608_conv_table;
+  ym2608->lx1 = ym2608_conv_table;
+  ym2608->rx1 = ym2608_conv_table;
 
   ym2608->back = 0;
   ym2608->lback = 0;
