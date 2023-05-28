@@ -290,8 +290,11 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   }
 
   // allocate file read buffer
-  size_t fread_buffer_len = input_format == FORMAT_YM2608 ? pcm_channels * pcm_freq * 1 / 4 : 
-                                                            pcm_channels * pcm_freq * 1;    // 1 sec (adpcm=2sec)
+  size_t fread_buffer_len = 
+    input_format == FORMAT_ADPCM  ? pcm_channels * pcm_freq * 1 / 25 :       // 2000 / 5 = 400 msec
+    input_format == FORMAT_YM2608 ? pcm_channels * pcm_freq * 1 / 4 / 5 :    // 1000 / 5 = 200 msec 
+                                    pcm_channels * pcm_freq * 1 / 5;         // 1000 / 5 = 200 msec
+
   fread_buffer = malloc(input_format == FORMAT_ADPCM ? sizeof(uint8_t) * fread_buffer_len :
                                                        sizeof(int16_t) * fread_buffer_len);
   //printf("fread_buffer_len = %d\n", fread_buffer_len);
@@ -343,8 +346,8 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
         }
       }
       if (use_oled) {
-        oled_ssd1306_show_meter(&ssd1306, 2, 6, pcm_buffer[0], 0);
-        oled_ssd1306_show_meter(&ssd1306, 2, 7, pcm_buffer[1], 0);
+        oled_ssd1306_show_meter(&ssd1306, 12, 6, pcm_buffer[0], 0);
+        oled_ssd1306_show_meter(&ssd1306, 12, 7, pcm_buffer[1], 0);
       }
       printf("\r%d/%d (%4.2f%%)", fread_len, pcm_data_size, fread_len * 100.0 / pcm_data_size);
       fflush(stdout);
@@ -372,8 +375,8 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
         }
       }
       if (use_oled) {
-        oled_ssd1306_show_meter(&ssd1306, 2, 6, pcm_buffer[0], 0);
-        oled_ssd1306_show_meter(&ssd1306, 2, 7, pcm_buffer[1], 0);
+        oled_ssd1306_show_meter(&ssd1306, 12, 6, pcm_buffer[0], 0);
+        oled_ssd1306_show_meter(&ssd1306, 12, 7, pcm_buffer[1], 0);
       }
       printf("\r%d/%d (%4.2f%%)", fread_len * sizeof(int16_t), pcm_data_size, fread_len * sizeof(int16_t) * 100.0 / pcm_data_size);
       fflush(stdout);
