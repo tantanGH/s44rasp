@@ -169,3 +169,12 @@ OLED表示を行う場合は `-o` オプションをつけて実行してくだ�
 
 https://github.com/tantanGH/s44rasp/assets/121137457/5f559c0e-38c9-4ff0-af5c-054fc20e795a
 
+---
+
+## Special Thanks
+
+OLEDに表示する 6x8サイズのフォントとして、門真 なむ氏のk6x8フォントデータをコンバートしたものを利用させて頂きました。
+
+[6×8 ドット日本語フォント「k6x8」](https://littlelimit.net/k6x8.htm)
+
+この場を借りてお礼申し上げます。
