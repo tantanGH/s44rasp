@@ -31,12 +31,6 @@ int32_t oled_ssd1306_open(OLED_SSD1306* ssd1306) {
     goto exit;
   }
 
-  // use high speed mode
-  if (ioctl(ssd1306->handle, I2C_SET_BUS_SPEED, 400000) < 0) {
-    printf("error: failed to use i2c high speed mode.\n");
-    goto exit;
-  }
-
   // send init command
   uint8_t init_commands[] = {
     0x00,                 // command stream
