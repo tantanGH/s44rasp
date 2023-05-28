@@ -134,7 +134,7 @@ size_t ym2608_decode_exec(YM2608_DECODE_HANDLE* ym2608, int16_t* output_buffer, 
       while (source_buffer_ofs < source_buffer_len) {
 
         uint8_t code;
-        if ((ym2608->adpcm_counter % 2) != 0) {
+        if ((ym2608->adpcm_counter % 2) == 0) {
           code = source_buffer[ source_buffer_ofs ] & 0x0f;
         } else {
           code = (source_buffer[ source_buffer_ofs++ ] >> 4) & 0x0f;
