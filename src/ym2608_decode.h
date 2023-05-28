@@ -39,6 +39,6 @@ int32_t ym2608_decode_open(YM2608_DECODE_HANDLE* ym2608, int32_t sample_rate, in
 void ym2608_decode_close(YM2608_DECODE_HANDLE* ym2608);
 size_t ym2608_decode_exec(YM2608_DECODE_HANDLE* ym2608, int16_t* output_buffer, uint8_t* source_buffer, size_t source_buffer_len);
 
-extern uint8_t[] ym2608_conv_table;
+extern uint8_t ym2608_conv_table[];
 
 #endif
