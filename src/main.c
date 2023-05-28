@@ -217,13 +217,6 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     goto exit;
   }
 
-  // dummy read for disk cache fill
-  size_t dummy_read_size = pcm_freq * 2 * 8;
-  uint8_t* dummy_buffer = malloc(dummy_read_size);
-  fread(dummy_buffer, sizeof(uint8_t), dummy_read_size, fp);
-  fseek(fp, 0, SEEK_SET);
-  free(dummy_buffer);
-
   // read header part of WAV file
   size_t skip_offset = 0;
   if (input_format == FORMAT_WAV) {
@@ -240,6 +233,13 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   // check file size
   fseek(fp, 0, SEEK_END);
   size_t pcm_data_size = ftell(fp) - skip_offset;
+  fseek(fp, skip_offset, SEEK_SET);
+
+  // dummy read for disk cache fill
+  size_t dummy_read_size = pcm_freq * 2 * 8;
+  uint8_t* dummy_buffer = malloc(dummy_read_size);
+  fread(dummy_buffer, sizeof(uint8_t), dummy_read_size, fp);
+  free(dummy_buffer);
   fseek(fp, skip_offset, SEEK_SET);
 
   // OLED information display
