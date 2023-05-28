@@ -47,7 +47,7 @@ s44rasp でこの種の USB-DAC を利用するには、USB端子にDACを接続
           Subdevices: 1/1
           Subdevice #0: subdevice #0
 
-この場合は card 1 として認識されていますので、s44rasp で利用する場合は、以下のように指定すればok。
+この場合は card 1 として認識されていますので、s44rasp で利用するには以下のように指定すればok。
 
         s44rasp -d hw:1,0 hogehoge.s44
 
@@ -91,7 +91,7 @@ Raspberry Pi の 40pin GPIO コネクタにポン付けできる DAC HAT が数�
           Subdevices: 1/1
           Subdevice #0: subdevice #0        
 
-この場合 card 0 として認識されているので、s44rasp で利用する場合は、以下のように指定すればok。
+この場合 card 0 として認識されているので、s44rasp で利用するには以下のように指定すればok。
 
         s44rasp -d hw:0,0 hogehoge.s44
 
