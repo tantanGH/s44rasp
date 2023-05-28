@@ -71,7 +71,7 @@ size_t raw_decode_exec(RAW_DECODE_HANDLE* pcm, int16_t* output_buffer, int16_t* 
     } else {
 
       // endian converion
-      while (source_buffer_ofs < source_buffer_len * 4) {
+      while (source_buffer_ofs < source_buffer_len * 2) {
 
         output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs + 1 ];
         output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs + 0 ];
@@ -111,7 +111,7 @@ size_t raw_decode_exec(RAW_DECODE_HANDLE* pcm, int16_t* output_buffer, int16_t* 
     } else {
 
       // endian converion
-      while (source_buffer_ofs < source_buffer_len * 4) {
+      while (source_buffer_ofs < source_buffer_len * 2) {
         output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs + 1 ];
         output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs + 0 ];
         output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs + 3 ];
