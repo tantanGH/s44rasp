@@ -128,7 +128,7 @@ size_t ym2608_decode_exec(YM2608_DECODE_HANDLE* ym2608, int16_t* output_buffer, 
       ym2608->last_estimate1 = back;
       ym2608->x1 = a0;
 
-      output_buffer_len = output_buffer_ofs / 2;
+      output_buffer_len = output_buffer_ofs;
 
     } else {
 
@@ -256,7 +256,7 @@ size_t ym2608_decode_exec(YM2608_DECODE_HANDLE* ym2608, int16_t* output_buffer, 
       ym2608->last_estimate1 = back;
       ym2608->x1 = a0;
 
-      output_buffer_len = output_buffer_ofs / 2;
+      output_buffer_len = output_buffer_ofs;
 
     } else {
 
