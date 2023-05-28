@@ -186,15 +186,15 @@ size_t ym2608_decode_exec(YM2608_DECODE_HANDLE* ym2608, int16_t* output_buffer, 
         printf("d3=%02x, a0=%x\n", d3, a0);
 
 
-        back += (int16_t)((a0[0] << 8) + a0[1]);
+        back += (int16_t)((a0[0] * 256) + a0[1]);
         output_buffer[ output_buffer_ofs ++ ] = back;
         printf("back=%x\n", back);
 
-        back += (int16_t)((a0[2] << 8) + a0[3]);
+        back += (int16_t)((a0[2] * 256) + a0[3]);
         output_buffer[ output_buffer_ofs ++ ] = back;
         printf("back=%x\n", back);
 
-        int16_t ofs = (int16_t)((a0[4] << 24) + (a0[5] << 16) + (a0[6] << 8) + a0[7]);
+        int16_t ofs = (int16_t)((a0[4] * 256 * 256 * 256) + (a0[5] * 256 * 256) + (a0[6] * 256) + a0[7]);
         printf("ofs=%d, a0=%x\n", ofs, a0);
         a0 += 4 + ofs;
         printf("ofs=%d, a0=%x\n", ofs, a0);
