@@ -25,9 +25,9 @@ typedef struct {
 
   int16_t up_sampling;
 
-  uint8_t* x1_addr;
-  uint8_t* lx1_addr;
-  uint8_t* rx1_addr;
+  uint8_t* x1;
+  uint8_t* lx1;
+  uint8_t* rx1;
 
   int32_t back;
   int32_t lback;
