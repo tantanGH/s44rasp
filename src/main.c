@@ -30,7 +30,8 @@ static void show_help_message() {
   printf("usage: s44rasp [options] <input-file[.pcm|.sXX|.mXX|.aXX|.nXX|.wav]>\n");
   printf("options:\n");
   printf("     -d <alsa-device>    ... ALSA PCM device name (i.e. hw:3,0)\n");
-  printf("     -s <serial-device>  ... serial device name (i.e. /dev/serial0)\n");
+  printf("     -o           ... enable OLED(SSD1306) display\n");
+//  printf("     -s <serial-device>  ... serial device name (i.e. /dev/serial0)\n");
 //  printf("     -l <latency>        ... ALSA PCM latency in msec (default:100ms)\n");
 //  printf("     -f           ... supported format check\n");
   printf("     -h           ... show help message\n");
@@ -60,7 +61,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   YM2608_DECODE_HANDLE ym2608_decoder = { 0 };
 
   // oled
-  int16_t use_oled = 1;
+  int16_t use_oled = 0;
   OLED_SSD1306 ssd1306 = { 0 };
 
   printf("s44rasp - X68k ADPCM/PCM/WAV player for Raspberry Pi version " PROGRAM_VERSION " by tantan\n");
@@ -75,6 +76,8 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
         i++;
 //      } else if (argv[i][1] == 'f') {
 //        pcm_format_check = 1;
+      } else if (argv[i][1] == 'o') {
+        use_oled = 1;
       } else if (argv[i][1] == 'h') {
         show_help_message();
         goto exit;

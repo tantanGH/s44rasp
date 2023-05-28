@@ -1,15 +1,61 @@
 # s44rasp
 
-ADPCM/PCM/WAV player for Raspberry Pi
+X680x0 ADPCM/PCM/WAV player for Raspberry Pi
 
 ---
 
 ## About This
 
+Raspberry Pi OS 上で動作する、主にX68k向けのPCM曲データを再生するツールです。
+
+- 低負荷
+- USB DAC 出力対応
+- DAC HAT 出力対応
+- OLED (SSD1306) ディスプレイ表示対応
+
+以下のPCM形式をサポートしています。ファイルの拡張子で判別します。
+
+- .pcm ... X68k 4bit-12bit ADPCM (15.6kHz/mono)
+- .s32/.s44/.s48 ... 16bit Raw PCM (big endian) stereo
+- .m32/.m44/.m48 ... 16bit Raw PCM (big endian) mono
+- .a32/.a44/.a48 ... YM2608 4bit-16bit ADPCM stereo
+- .n32/.n44/.n48 ... YM2608 4bit-16bit ADPCM mono
+- .wav ... Windows WAV 16bit Raw PCM (little endian) stereo/mono
+
+48kHzより上の周波数のデータには対応していません。
+
 ---
 
 ## How to Install
 
+ソースコードをコンパイルする必要があります。
+
+事前準備として `libasound2-dev` を導入します。
+
+        sudo apt get -y libasound2-dev
+
+このリポジトリを clone します。
+
+        cd
+        cd oss
+        git clone https://github.com/tantanGH/s44rasp
+        cd src
+        make
+
+出来上がった `s44rasp` をパスの通ったところに置きます。
+
+---
+
+## How to Use
+
+        s44rasp [options] <input-file.[pcm|sXX|mXX|aXX|nXX|wav]>
+
+        options:
+          -d ... 出力デバイス名の指定 (hw:0,0 など)
+          -o ... OLED出力の有効化
+
+出力デバイス名は `hw:0,0` のようなもので、`hw:` に続いてカード番号とサブデバイス番号を入れます。
+カード番号は `aplay -l` で知ることができます。サブデバイス番号は通常0です。
 
 ---
 
