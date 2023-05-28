@@ -35,7 +35,7 @@ void raw_decode_close(RAW_DECODE_HANDLE* pcm) {
 //
 //  decode
 //
-size_t raw_decode_exec(RAW_DECODE_HANDLE* pcm, void* output_buffer, int16_t* source_buffer, size_t source_buffer_len) {
+size_t raw_decode_exec(RAW_DECODE_HANDLE* pcm, int16_t* output_buffer, int16_t* source_buffer, size_t source_buffer_len) {
 
   uint8_t* source_buffer_uint8 = (uint8_t*)source_buffer;
   uint8_t* output_buffer_uint8 = (uint8_t*)output_buffer;
