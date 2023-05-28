@@ -86,13 +86,16 @@ size_t ym2608_decode_exec(YM2608_DECODE_HANDLE* ym2608, int16_t* output_buffer, 
 
       while (source_buffer_ofs < source_buffer_len) {
 
-        while (ym2608->resample_counter < ym2608->resample_rate) {
+        for (;;) {
           ym2608->resample_counter += ym2608->sample_rate;
+          if (ym2608->resample_counter >= ym2608->resample_rate) {
+            ym2608->resample_counter -= ym2608->resample_rate;
+            break;
+          }
           output_buffer[ output_buffer_ofs ++ ] = back;
           output_buffer[ output_buffer_ofs ++ ] = back;
         }
-        ym2608->resample_counter -= ym2608->resample_rate;
-      
+              
         int16_t d3 = 0;
         d3 += source_buffer[ source_buffer_ofs ++ ];
         d3 *= 8;
@@ -105,12 +108,15 @@ size_t ym2608_decode_exec(YM2608_DECODE_HANDLE* ym2608, int16_t* output_buffer, 
         output_buffer[ output_buffer_ofs ++ ] = back;
         output_buffer[ output_buffer_ofs ++ ] = back;
 
-        while (ym2608->resample_counter < ym2608->resample_rate) {
+        for (;;) {
           ym2608->resample_counter += ym2608->sample_rate;
+          if (ym2608->resample_counter >= ym2608->resample_rate) {
+            ym2608->resample_counter -= ym2608->resample_rate;
+            break;
+          }
           output_buffer[ output_buffer_ofs ++ ] = back;
           output_buffer[ output_buffer_ofs ++ ] = back;
         }
-        ym2608->resample_counter -= ym2608->resample_rate;
 
         int16_t delta2;
         ((uint8_t*)(&delta2))[0] = a0[3];
