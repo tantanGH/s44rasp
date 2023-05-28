@@ -66,6 +66,7 @@ size_t ym2608_decode_exec(YM2608_DECODE_HANDLE* ym2608, int16_t* output_buffer, 
 
   size_t source_buffer_ofs = 0;
   size_t output_buffer_ofs = 0;
+  size_t output_buffer_len = 0;
 
   if (ym2608->sample_rate < 44100 || ym2608->up_sampling) {
 
@@ -127,6 +128,8 @@ size_t ym2608_decode_exec(YM2608_DECODE_HANDLE* ym2608, int16_t* output_buffer, 
       ym2608->last_estimate1 = back;
       ym2608->x1 = a0;
 
+      output_buffer_len = output_buffer_ofs / 2;
+
     } else {
 
       uint8_t* a0 = ym2608->x1;
@@ -208,6 +211,8 @@ size_t ym2608_decode_exec(YM2608_DECODE_HANDLE* ym2608, int16_t* output_buffer, 
       ym2608->last_estimate2 = back2;
       ym2608->x1 = a0;
       ym2608->x2 = a1;
+
+      output_buffer_len = output_buffer_ofs / 2;
 
     }
 
@@ -251,6 +256,8 @@ size_t ym2608_decode_exec(YM2608_DECODE_HANDLE* ym2608, int16_t* output_buffer, 
       ym2608->last_estimate1 = back;
       ym2608->x1 = a0;
 
+      output_buffer_len = output_buffer_ofs / 2;
+
     } else {
 
       uint8_t* a0 = ym2608->x1;
@@ -313,9 +320,11 @@ size_t ym2608_decode_exec(YM2608_DECODE_HANDLE* ym2608, int16_t* output_buffer, 
       ym2608->x1 = a0;
       ym2608->x2 = a1;
 
+      output_buffer_len = output_buffer_ofs / 2;
+
     }
 
   }
 
-  return output_buffer_ofs;
+  return output_buffer_len;
 }
