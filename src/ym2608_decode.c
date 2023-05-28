@@ -148,6 +148,8 @@ size_t ym2608_decode_exec(YM2608_DECODE_HANDLE* ym2608, int16_t* output_buffer, 
           ym2608->step_size = step_size;
           ym2608->last_estimate = new_estimate;
 
+          ym2608->resample_counter -= ym2608->resample_rate;
+
         }
 
       }
