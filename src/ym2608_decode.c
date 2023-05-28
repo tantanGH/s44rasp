@@ -204,8 +204,8 @@ size_t ym2608_decode_exec(YM2608_DECODE_HANDLE* ym2608, int16_t* output_buffer, 
         int32_t ofs;
         ((uint8_t*)(&ofs))[0] = a0[7];
         ((uint8_t*)(&ofs))[1] = a0[6]; 
-        ((uint8_t*)(&ofs))[0] = a0[5];
-        ((uint8_t*)(&ofs))[1] = a0[4];     
+        ((uint8_t*)(&ofs))[2] = a0[5];
+        ((uint8_t*)(&ofs))[3] = a0[4];     
         printf("ofs=%d, a0=%x\n", ofs, a0);
         a0 += 4 + ofs;
         printf("ofs=%d, a0=%x\n", ofs, a0);
