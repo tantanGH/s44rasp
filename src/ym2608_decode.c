@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include "ym2608_decode.h"
+#include "ym2608_table.h"
 
 /*
 //
