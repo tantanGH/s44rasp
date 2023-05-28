@@ -78,6 +78,66 @@ size_t ym2608_decode_exec(YM2608_DECODE_HANDLE* ym2608, int16_t* output_buffer, 
   size_t output_buffer_ofs = 0;
 
   if (ym2608->sample_rate < 44100 || ym2608->up_sampling) {
+
+    if (ym2608->channels == 1) {
+
+      uint8_t* a0 = ym2608->x1;
+      int16_t back = ym2608->last_estimate1;
+
+      while (source_buffer_ofs < source_buffer_len) {
+
+        while (ym2608->resample_counter < ym2608->resample_rate) {
+          ym2608->resample_counter += ym2608->sample_rate;
+          output_buffer[ output_buffer_ofs ++ ] = back;
+          output_buffer[ output_buffer_ofs ++ ] = back;
+        }
+        ym2608->resample_counter -= ym2608->resample_rate;
+      
+        int16_t d3 = 0;
+        d3 += source_buffer[ source_buffer_ofs ++ ];
+        d3 *= 8;
+        a0 += d3;
+
+        int16_t delta1;
+        ((uint8_t*)(&delta1))[0] = a0[1];
+        ((uint8_t*)(&delta1))[1] = a0[0];
+        back += delta1;
+        output_buffer[ output_buffer_ofs ++ ] = back;
+        output_buffer[ output_buffer_ofs ++ ] = back;
+
+        while (ym2608->resample_counter < ym2608->resample_rate) {
+          ym2608->resample_counter += ym2608->sample_rate;
+          output_buffer[ output_buffer_ofs ++ ] = back;
+          output_buffer[ output_buffer_ofs ++ ] = back;
+        }
+        ym2608->resample_counter -= ym2608->resample_rate;
+
+        int16_t delta2;
+        ((uint8_t*)(&delta2))[0] = a0[3];
+        ((uint8_t*)(&delta2))[1] = a0[2];
+        back += delta2;
+        output_buffer[ output_buffer_ofs ++ ] = back;
+        output_buffer[ output_buffer_ofs ++ ] = back;
+
+        int32_t ofs;
+        ((uint8_t*)(&ofs))[0] = a0[7];
+        ((uint8_t*)(&ofs))[1] = a0[6]; 
+        ((uint8_t*)(&ofs))[2] = a0[5];
+        ((uint8_t*)(&ofs))[3] = a0[4];     
+        a0 += 4 + ofs;
+
+      }
+
+      ym2608->last_estimate1 = back;
+      ym2608->x1 = a0;
+
+    } else {
+
+
+    }
+
+
+
 /*
     if (ym2608->channels == 1) {
     
@@ -124,8 +184,6 @@ size_t ym2608_decode_exec(YM2608_DECODE_HANDLE* ym2608, int16_t* output_buffer, 
       int16_t back = ym2608->last_estimate1;
 
       while (source_buffer_ofs < source_buffer_len) {
-
-        //printf("conv_table=%x, a0=%x, back=%x\n", ym2608_conv_table, a0, back);
 
         int16_t d3 = 0;
         d3 += source_buffer[ source_buffer_ofs ++ ];
