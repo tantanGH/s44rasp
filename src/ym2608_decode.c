@@ -178,19 +178,25 @@ size_t ym2608_decode_exec(YM2608_DECODE_HANDLE* ym2608, int16_t* output_buffer, 
 
       while (source_buffer_ofs < source_buffer_len) {
 
-        printf("conv_table=%x, x1=%x\n", ym2608_conv_table, ym2608->x1);
+        printf("conv_table=%x, x1=%x, back=%x\n", ym2608_conv_table, ym2608->x1, back);
 
         uint8_t d3 = source_buffer[ source_buffer_ofs ++ ];
         ym2608->x1 += d3 * 8;
         printf("d3=%02x, x1=%x\n", d3, ym2608->x1);
 
+
         back += (int16_t)((ym2608->x1[0] << 8) + ym2608->x1[1]);
         output_buffer[ output_buffer_ofs ++ ] = back;
+        printf("back=%x\n", back);
 
         back += (int16_t)((ym2608->x1[2] << 8) + ym2608->x1[3]);
         output_buffer[ output_buffer_ofs ++ ] = back;
+        printf("back=%x\n", back);
 
-        ym2608->x1 += (int32_t)((ym2608->x1[4] << 24) + (ym2608->x1[5] << 16) + (ym2608->x1[6] << 8) + ym2608->x1[7]);
+        int32_t ofs = (int32_t)((ym2608->x1[4] << 24) + (ym2608->x1[5] << 16) + (ym2608->x1[6] << 8) + ym2608->x1[7]);
+        ym2608->x1 += 4 + ofs;
+
+        printf("ofs=%d, x1=%x\n", ofs, ym2608->x1);
 
       }
 
