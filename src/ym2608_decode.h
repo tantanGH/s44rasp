@@ -10,15 +10,15 @@ typedef struct {
   int32_t sample_rate;
   int16_t channels;
 
-  uint32_t step_size;
-  int16_t step_index;
-  int32_t last_estimate;
+//  uint32_t step_size;
+//  int16_t step_index;
+//  int32_t last_estimate;
 
-  uint32_t step_size2;
-  int16_t step_index2;
-  int32_t last_estimate2;
+//  uint32_t step_size2;
+//  int16_t step_index2;
+//  int32_t last_estimate2;
 
-  size_t adpcm_counter;
+//  size_t adpcm_counter;
 
   int32_t resample_rate;
   size_t resample_counter;
@@ -26,12 +26,10 @@ typedef struct {
   int16_t up_sampling;
 
   uint8_t* x1;
-  uint8_t* lx1;
-  uint8_t* rx1;
+  uint8_t* x2;
 
-  int32_t back;
-  int32_t lback;
-  int32_t rback;
+  int32_t last_estimate1;
+  int32_t last_estimate2;
 
 } YM2608_DECODE_HANDLE;
 
