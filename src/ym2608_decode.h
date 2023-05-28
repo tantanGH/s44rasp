@@ -10,11 +10,11 @@ typedef struct {
   int32_t sample_rate;
   int16_t channels;
 
-  int16_t step_size;
+  uint32_t step_size;
   int16_t step_index;
   int16_t last_estimate;
 
-  int16_t step_size2;
+  uint32_t step_size2;
   int16_t step_index2;
   int16_t last_estimate2;
 

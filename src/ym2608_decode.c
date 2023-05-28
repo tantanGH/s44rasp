@@ -56,18 +56,18 @@ static inline int16_t ym2608_decode_orig(uint8_t code, int16_t* step_index, int1
 //
 //  YM2608 ADPCM decode
 //
-static inline int16_t ym2608_decode(uint8_t code, int16_t* step_size, int16_t last_data) {
+static inline int16_t ym2608_decode(uint8_t code, uint32_t* step_size, int16_t last_data) {
 
   static const int16_t step_table[] = { 57, 57, 57, 57, 77, 102, 128, 153 };
 
   int16_t delta = code & 0x07;
-  int16_t ss = *step_size;
+  uint32_t ss = *step_size;
   int32_t diff = ss * ( 1 + ( delta * 2 )) / 8;
 
   int32_t estimate = (code & 0x08) ? last_data - diff : last_data + diff;
   estimate = (estimate > 32767) ? 32767 : (estimate < -32768) ? -32768 : estimate;
  
-  int32_t next_step = ss * step_table[ delta ] / 64;
+  uint32_t next_step = ss * step_table[ delta ] / 64;
   *step_size = (next_step < 127) ? 127 : (next_step > 24576) ? 24576 : next_step;
 
   return estimate;
