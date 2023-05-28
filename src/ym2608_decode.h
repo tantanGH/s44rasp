@@ -10,16 +10,6 @@ typedef struct {
   int32_t sample_rate;
   int16_t channels;
 
-//  uint32_t step_size;
-//  int16_t step_index;
-//  int32_t last_estimate;
-
-//  uint32_t step_size2;
-//  int16_t step_index2;
-//  int32_t last_estimate2;
-
-//  size_t adpcm_counter;
-
   int32_t resample_rate;
   size_t resample_counter;
 
