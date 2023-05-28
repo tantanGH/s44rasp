@@ -13,7 +13,7 @@ typedef struct {
   int32_t resample_rate;
   size_t resample_counter;
 
-  in16_t use_24bit;
+  int16_t use_24bit;
 
 } RAW_DECODE_HANDLE;
 
