@@ -25,6 +25,12 @@ int32_t oled_ssd1306_open(OLED_SSD1306* ssd1306) {
     goto exit;
   }
 
+  // use high speed mode
+  if (ioctl(ssd1306->handle, I2C_SPEED, 400000) < 0) {
+    printf("error: failed to use i2c high speed mode.\n");
+    goto exit;
+  }
+
   // set i2c slave address
   if (ioctl(ssd1306->handle, I2C_SLAVE, OLED_I2C_ADDR) < 0)  {
     printf("error: failed to select i2c device.\n");
