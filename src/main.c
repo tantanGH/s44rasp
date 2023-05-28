@@ -29,8 +29,9 @@ static void sigint_handler(int signal) {
 static void show_help_message() {
   printf("usage: s44rasp [options] <input-file[.pcm|.sXX|.mXX|.aXX|.nXX|.wav]>\n");
   printf("options:\n");
-  printf("     -d <alsa-device>    ... ALSA PCM device name (i.e. hw:3,0)\n");
-  printf("     -o           ... enable OLED(SSD1306) display\n");
+  printf("     -d <alsa-device> ... ALSA PCM device name (i.e. hw:3,0)\n");
+  printf("     -o               ... enable OLED(SSD1306) display\n");
+  printf("     -p               ... use 24bit bit depth mode (for PCM51xx)\n");
 //  printf("     -s <serial-device>  ... serial device name (i.e. /dev/serial0)\n");
 //  printf("     -l <latency>        ... ALSA PCM latency in msec (default:100ms)\n");
 //  printf("     -f           ... supported format check\n");
@@ -50,6 +51,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   uint8_t* pcm_file_name = NULL;
   uint8_t* pcm_device_name = NULL;
   uint32_t pcm_latency = 50000;
+  int16_t use_24bit = 0;
 //  int16_t pcm_format_check = 0;
   int32_t alsa_rc = 0;
   FILE* fp = NULL;
@@ -78,6 +80,8 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
 //        pcm_format_check = 1;
       } else if (argv[i][1] == 'o') {
         use_oled = 1;
+      } else if (argv[i][1] == 'p') {
+        use_24bit = 1;
       } else if (argv[i][1] == 'h') {
         show_help_message();
         goto exit;
@@ -175,7 +179,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
 
   // init raw pcm decoder if needed
   if (input_format == FORMAT_RAW) {
-    if (raw_decode_open(&raw_decoder, pcm_freq, pcm_channels) != 0) {
+    if (raw_decode_open(&raw_decoder, pcm_freq, pcm_channels, use_24bit) != 0) {
       printf("error: PCM decoder initialization error.\n");
       goto exit;
     }
@@ -183,7 +187,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
 
   // init wav decoder if needed
   if (input_format == FORMAT_WAV) {
-    if (wav_decode_open(&wav_decoder) != 0) {
+    if (wav_decode_open(&wav_decoder, use_24bit) != 0) {
       printf("error: WAV decoder initialization error.\n");
       goto exit;
     }
@@ -231,6 +235,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   size_t pcm_data_size = ftell(fp) - skip_offset;
   fseek(fp, skip_offset, SEEK_SET);
 
+  // OLED information display
   if (use_oled) {
     static uint8_t mes[128];
     uint8_t* c = strrchr(pcm_file_name, '/');
@@ -272,6 +277,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     printf("PCM length    : %4.2f [sec]\n", (float)pcm_data_size / pcm_1sec_size);
   }
 
+  // describe raw format
   if (input_format == FORMAT_RAW) {
     float pcm_1sec_size = pcm_freq * 2;
     printf("PCM frequency : %d [Hz]\n", pcm_freq);
@@ -279,12 +285,14 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     printf("PCM length    : %4.2f [sec]\n", (float)pcm_data_size / pcm_channels / pcm_1sec_size);
   }
 
+  // describe wav format
   if (input_format == FORMAT_WAV) {
     printf("PCM frequency : %d [Hz]\n", pcm_freq);
     printf("PCM channels  : %s\n", pcm_channels == 1 ? "mono" : "stereo");
     printf("PCM length    : %4.2f [sec]\n", (float)wav_decoder.duration / pcm_freq);
   }
 
+  // describe ym2608 format
   if (input_format == FORMAT_YM2608) {
     float pcm_1sec_size = pcm_freq * 0.5;
     printf("PCM frequency : %d [Hz]\n", pcm_freq);
@@ -303,8 +311,9 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   //printf("fread_buffer_len = %d\n", fread_buffer_len);
 
   // allocate ALSA pcm buffer
-  size_t pcm_buffer_len = 2 * (pcm_freq < 44100 ? 48000 * 2 : pcm_freq) * 1; // 1 sec (adpcm=2sec)
-  pcm_buffer = (int16_t*)malloc(sizeof(int16_t) * pcm_buffer_len);    // 16bit & stereo ... fixed
+  size_t pcm_buffer_len = 2 * (pcm_freq < 44100 ? 48000 * 2 : pcm_freq) * 1;  // 1 sec (adpcm=2sec)
+  if (use_24bit) pcm_buffer_len = pcm_buffer_len * 3 / 2;
+  pcm_buffer = (int16_t*)malloc(sizeof(int16_t) * pcm_buffer_len);            // 16/24bit & stereo ... fixed
   //printf("pcm_buffer_len = %d\n", pcm_buffer_len);
 
   // init ALSA device
@@ -315,10 +324,18 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   }
 
   // in case of 15.6kHz or 32kHz, upscale to 48kHz
-  if ((alsa_rc = snd_pcm_set_params(pcm_handle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, 2,
-                          (pcm_freq < 44100) ? 48000 : pcm_freq, 1, pcm_latency)) != 0) {
-    printf("error: pcm device setting error. (%s)\n", snd_strerror(alsa_rc));
-    goto exit;
+  if (pcm_freq == 44100 && use_24bit) {
+    if ((alsa_rc = snd_pcm_set_params(pcm_handle, SND_PCM_FORMAT_S24_LE, SND_PCM_ACCESS_RW_INTERLEAVED, 2,
+                                      pcm_freq, 1, pcm_latency)) != 0) {
+      printf("error: pcm device setting error. (%s)\n", snd_strerror(alsa_rc));
+      goto exit;
+    }
+  } else {
+    if ((alsa_rc = snd_pcm_set_params(pcm_handle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, 2,
+                            (pcm_freq < 44100) ? 48000 : pcm_freq, 1, pcm_latency)) != 0) {
+      printf("error: pcm device setting error. (%s)\n", snd_strerror(alsa_rc));
+      goto exit;
+    }
   }
 
   // sigint handler

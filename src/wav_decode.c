@@ -6,7 +6,7 @@
 //
 //  init wav decoder handle
 //
-int32_t wav_decode_open(WAV_DECODE_HANDLE* wav) {
+int32_t wav_decode_open(WAV_DECODE_HANDLE* wav, int16_t use_24bit) {
 
   int32_t rc = -1;
 
@@ -16,6 +16,8 @@ int32_t wav_decode_open(WAV_DECODE_HANDLE* wav) {
   wav->block_align = -1;
   wav->bits_per_sample = -1;
   wav->duration = -1;
+
+  wav->use_24bit = use_24bit;
  
   rc = 0;
 
@@ -190,26 +192,68 @@ exit:
 //
 //  decode
 //
-size_t wav_decode_exec(WAV_DECODE_HANDLE* wav, int16_t* output_buffer, int16_t* source_buffer, size_t source_buffer_len) {
+size_t wav_decode_exec(WAV_DECODE_HANDLE* wav, void* output_buffer, int16_t* source_buffer, size_t source_buffer_len) {
 
   size_t source_buffer_ofs = 0;
   size_t output_buffer_ofs = 0;
+  size_t output_buffer_len = 0;
 
-  if (wav->channels == 1) {
+  if (wav->sample_rate == 44100 && wav->use_24bit) {
+  
+    uint8_t* source_buffer_uint8 = (uint8_t*)source_buffer;
+    uint8_t* output_buffer_uint8 = (uint8_t*)output_buffer; 
 
-    // mono to stereo duplication
-    while (source_buffer_ofs < source_buffer_len) {
-      output_buffer[ output_buffer_ofs++ ] = source_buffer[ source_buffer_ofs ];
-      output_buffer[ output_buffer_ofs++ ] = source_buffer[ source_buffer_ofs ];
-      source_buffer_ofs++;
+    if (pcm->channels == 1) {
+
+      while (source_buffer_ofs < source_buffer_len) {
+        output_buffer_uint8[ output_buffer_ofs ++ ] = 0;
+        output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs * 2 + 0 ];
+        output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs * 2 + 1 ];
+        output_buffer_uint8[ output_buffer_ofs ++ ] = 0;
+        output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs * 2 + 0 ];
+        output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs * 2 + 1 ];
+        source_buffer_ofs ++;
+      }
+
+      output_buffer_len = source_buffer_ofs;
+
+    } else {
+
+      // endian converion
+      while (source_buffer_ofs < source_buffer_len) {
+        output_buffer_uint8[ output_buffer_ofs ++ ] = 0;
+        output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs * 2 + 0 ];
+        output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs * 2 + 1 ];
+        source_buffer_ofs ++;
+      }
+
+      output_buffer_len = source_buffer_ofs;
+
     }
 
   } else {
 
-    memcpy(output_buffer, source_buffer, source_buffer_len * sizeof(int16_t));
-    output_buffer_ofs = source_buffer_len;
+    int16_t* output_buffer_int16 = (int16_t*)output_buffer; 
+
+    if (wav->channels == 1) {
+
+      // mono to stereo duplication
+      while (source_buffer_ofs < source_buffer_len) {
+        output_buffer_int16[ output_buffer_ofs++ ] = source_buffer[ source_buffer_ofs ];
+        output_buffer_int16[ output_buffer_ofs++ ] = source_buffer[ source_buffer_ofs ];
+        source_buffer_ofs++;
+      }
+
+      output_buffer_len = output_buffer_ofs;
+
+    } else {
+
+      memcpy(output_buffer, source_buffer, source_buffer_len * sizeof(int16_t));
+      output_buffer_len = source_buffer_len;
+
+    }
 
   }
 
-  return output_buffer_ofs;
+  return output_buffer_len;
 }
