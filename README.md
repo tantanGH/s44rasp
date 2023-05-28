@@ -1,17 +1,13 @@
 # s44rasp
 
-X680x0 ADPCM/PCM/WAV player for Raspberry Pi
-
----
-
-## About This
+X680x0 ADPCM/PCM/WAV player for Raspberry Pi with OLED support
 
 Raspberry Pi OS 上で動作する、主にX68k向けのPCM曲データを再生するツールです。
 
 - 低負荷
 - USB DAC 出力対応
 - DAC HAT 出力対応
-- OLED (SSD1306) ディスプレイ表示対応
+- OLED (SSD1306) ディスプレイ表示対応(曲情報およびレベルメータ)
 
 以下のPCM形式をサポートしています。ファイルの拡張子で判別します。
 
