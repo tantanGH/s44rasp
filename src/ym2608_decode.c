@@ -132,7 +132,7 @@ size_t ym2608_decode_exec(YM2608_DECODE_HANDLE* ym2608, int16_t* output_buffer, 
   size_t output_buffer_ofs = 0;
 
   if (ym2608->sample_rate < 44100 || ym2608->up_sampling) {
-
+/*
     if (ym2608->channels == 1) {
     
       while (source_buffer_ofs < source_buffer_len) {
@@ -169,7 +169,7 @@ size_t ym2608_decode_exec(YM2608_DECODE_HANDLE* ym2608, int16_t* output_buffer, 
     } else {
 
     }
-
+*/
   } else {
 
     if (ym2608->channels == 1) {
