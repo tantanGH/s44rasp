@@ -225,7 +225,7 @@ size_t wav_decode_exec(WAV_DECODE_HANDLE* wav, int16_t* output_buffer, int16_t* 
 
     } else {
 
-      while (source_buffer_ofs < source_buffer_len) {
+      while (source_buffer_ofs < source_buffer_len * 2) {
 
         output_buffer[ output_buffer_ofs ++ ] = source_buffer[ source_buffer_ofs + 0 ];
         output_buffer[ output_buffer_ofs ++ ] = source_buffer[ source_buffer_ofs + 1 ];

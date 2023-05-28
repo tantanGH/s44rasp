@@ -43,24 +43,24 @@ size_t raw_decode_exec(RAW_DECODE_HANDLE* pcm, int16_t* output_buffer, int16_t* 
   size_t output_buffer_ofs = 0;
   size_t output_buffer_len = 0;
 
-  if (pcm->sample_rate <= 32000 || pcm->up_sampling) {
+  if (pcm->sample_rate < 44100 || pcm->up_sampling) {
 
     if (pcm->channels == 1) {
 
       // mono to stereo duplication with endian conversion
-      while (source_buffer_ofs < source_buffer_len) {
+      while (source_buffer_ofs < source_buffer_len * 2) {
 
-        output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs * 2 + 1 ];
-        output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs * 2 + 0 ];
-        output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs * 2 + 1 ];
-        output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs * 2 + 0 ];
+        output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs + 1 ];
+        output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs + 0 ];
+        output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs + 1 ];
+        output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs + 0 ];
 
         // up sampling
         pcm->resample_counter += pcm->sample_rate;
         if (pcm->resample_counter < pcm->resample_rate) {
           // do not increment
         } else {
-          source_buffer_ofs ++;
+          source_buffer_ofs += 2;
           pcm->resample_counter -= pcm->resample_rate;
         }
 
@@ -71,7 +71,7 @@ size_t raw_decode_exec(RAW_DECODE_HANDLE* pcm, int16_t* output_buffer, int16_t* 
     } else {
 
       // endian converion
-      while (source_buffer_ofs < source_buffer_len) {
+      while (source_buffer_ofs < source_buffer_len * 4) {
 
         output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs + 1 ];
         output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs + 0 ];
@@ -98,7 +98,7 @@ size_t raw_decode_exec(RAW_DECODE_HANDLE* pcm, int16_t* output_buffer, int16_t* 
     if (pcm->channels == 1) {
 
       // mono to stereo duplication with endian conversion
-      while (source_buffer_ofs < source_buffer_len) {
+      while (source_buffer_ofs < source_buffer_len * 2) {
         output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs + 1 ];
         output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs + 0 ];
         output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs + 1 ];
@@ -111,7 +111,7 @@ size_t raw_decode_exec(RAW_DECODE_HANDLE* pcm, int16_t* output_buffer, int16_t* 
     } else {
 
       // endian converion
-      while (source_buffer_ofs < source_buffer_len) {
+      while (source_buffer_ofs < source_buffer_len * 4) {
         output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs + 1 ];
         output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs + 0 ];
         output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs + 3 ];
