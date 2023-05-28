@@ -14,6 +14,7 @@ typedef struct {
   int16_t bits_per_sample;
   int32_t duration;
   
+  int32_t resample_rate;
   size_t resample_counter;
   int16_t up_sampling;
 

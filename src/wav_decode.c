@@ -12,6 +12,7 @@ int32_t wav_decode_open(WAV_DECODE_HANDLE* wav, int16_t up_sampling) {
 
   wav->up_sampling = up_sampling;
   wav->resample_rate = 48000;
+  wav->resample_counter = 0;
 
   wav->sample_rate = -1;
   wav->channels = -1;
