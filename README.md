@@ -27,7 +27,7 @@ ADPCM/PCM/WAV player for Raspberry Pi
 
 s44rasp でこの種の USB-DAC を利用するには、USB端子にDACを接続した後、`aplay -l`で確認します。
 
-        aplay -l
+        $ aplay -l
 
         **** List of PLAYBACK Hardware Devices ****
         card 0: Headphones [bcm2835 Headphones], device 0: bcm2835 Headphones [bcm2835 Headphones]
@@ -78,7 +78,8 @@ Raspberry Pi の 40pin GPIO コネクタにポン付けできる DAC HAT が数�
 
 再起動し、`aplay -l`で DAC HAT が認識されていることを確認する。
 
-        aplay -l
+        $ aplay -l
+
         **** List of PLAYBACK Hardware Devices ****
         card 0: sndrpihifiberry [snd_rpi_hifiberry_dac], device 0: HifiBerry DAC HiFi pcm5102a-hifi-0 [HifiBerry DAC HiFi pcm5102a-hifi-0]
           Subdevices: 0/1
