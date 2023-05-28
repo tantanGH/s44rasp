@@ -346,8 +346,18 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
         }
       }
       if (use_oled) {
-        oled_ssd1306_show_meter(&ssd1306, 12, 6, pcm_buffer[0], 0);
-        oled_ssd1306_show_meter(&ssd1306, 12, 7, pcm_buffer[1], 0);
+        int16_t peak_l = 0;
+        int16_t peak_r = 0;
+        for (size_t i = 0; i < decode_len; i++) {
+          int16_t v = pcm_buffer[i] < 0 ? 0 - pcm_buffer[i] : pcm_buffer[i];
+          if (i & 0x01) {
+            if (v > peak_r) peak_r = v;
+          } else {
+            if (v > peak_l) peak_l = v;
+          }
+        }
+        oled_ssd1306_show_meter(&ssd1306, 12, 6, peak_l, 0);
+        oled_ssd1306_show_meter(&ssd1306, 12, 7, peak_r, 0);
       }
       printf("\r%d/%d (%4.2f%%)", fread_len, pcm_data_size, fread_len * 100.0 / pcm_data_size);
       fflush(stdout);
@@ -375,8 +385,18 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
         }
       }
       if (use_oled) {
-        oled_ssd1306_show_meter(&ssd1306, 12, 6, pcm_buffer[0], 0);
-        oled_ssd1306_show_meter(&ssd1306, 12, 7, pcm_buffer[1], 0);
+        int16_t peak_l = 0;
+        int16_t peak_r = 0;
+        for (size_t i = 0; i < decode_len; i++) {
+          int16_t v = pcm_buffer[i] < 0 ? 0 - pcm_buffer[i] : pcm_buffer[i];
+          if (i & 0x01) {
+            if (v > peak_r) peak_r = v;
+          } else {
+            if (v > peak_l) peak_l = v;
+          }
+        }
+        oled_ssd1306_show_meter(&ssd1306, 12, 6, peak_l, 0);
+        oled_ssd1306_show_meter(&ssd1306, 12, 7, peak_r, 0);
       }
       printf("\r%d/%d (%4.2f%%)", fread_len * sizeof(int16_t), pcm_data_size, fread_len * sizeof(int16_t) * 100.0 / pcm_data_size);
       fflush(stdout);
