@@ -195,7 +195,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
 
   // init adpcm (ym2608) decoder if needed
   if (input_format == FORMAT_YM2608) {
-    if (ym2608_decode_open(&ym2608_decoder, pcm_freq, pcm_channels) != 0) {
+    if (ym2608_decode_open(&ym2608_decoder, pcm_freq, pcm_channels, up_sampling) != 0) {
       printf("error: YM2608 adpcm decoder initialization error.\n");
       goto exit;
     }
