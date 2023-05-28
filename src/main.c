@@ -342,9 +342,9 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
           goto exit;
         }
       }
-      if (use_oeld) {
-        oeld_ssd1306_show_meter(&ssd1306, 2, 6, pcm_buffer[0], 0);
-        oeld_ssd1306_show_meter(&ssd1306, 2, 7, pcm_buffer[1], 0);
+      if (use_oled) {
+        oled_ssd1306_show_meter(&ssd1306, 2, 6, pcm_buffer[0], 0);
+        oled_ssd1306_show_meter(&ssd1306, 2, 7, pcm_buffer[1], 0);
       }
       printf("\r%d/%d (%4.2f%%)", fread_len, pcm_data_size, fread_len * 100.0 / pcm_data_size);
       fflush(stdout);
@@ -371,9 +371,9 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
           goto exit;
         }
       }
-      if (use_oeld) {
-        oeld_ssd1306_show_meter(&ssd1306, 2, 6, pcm_buffer[0], 0);
-        oeld_ssd1306_show_meter(&ssd1306, 2, 7, pcm_buffer[1], 0);
+      if (use_oled) {
+        oled_ssd1306_show_meter(&ssd1306, 2, 6, pcm_buffer[0], 0);
+        oled_ssd1306_show_meter(&ssd1306, 2, 7, pcm_buffer[1], 0);
       }
       printf("\r%d/%d (%4.2f%%)", fread_len * sizeof(int16_t), pcm_data_size, fread_len * sizeof(int16_t) * 100.0 / pcm_data_size);
       fflush(stdout);
