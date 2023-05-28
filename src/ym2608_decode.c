@@ -182,7 +182,7 @@ size_t ym2608_decode_exec(YM2608_DECODE_HANDLE* ym2608, int16_t* output_buffer, 
         printf("conv_table=%x, a0=%x, back=%x\n", ym2608_conv_table, a0, back);
 
         uint8_t d3 = source_buffer[ source_buffer_ofs ++ ];
-        a0 += d3 * 8;
+        a0 += (int16_t)(d3 << 3);
         printf("d3=%02x, a0=%x\n", d3, a0);
 
 
