@@ -203,7 +203,7 @@ size_t wav_decode_exec(WAV_DECODE_HANDLE* wav, void* output_buffer, int16_t* sou
     uint8_t* source_buffer_uint8 = (uint8_t*)source_buffer;
     uint8_t* output_buffer_uint8 = (uint8_t*)output_buffer; 
 
-    if (pcm->channels == 1) {
+    if (wav->channels == 1) {
 
       while (source_buffer_ofs < source_buffer_len) {
         output_buffer_uint8[ output_buffer_ofs ++ ] = 0;
