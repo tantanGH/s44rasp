@@ -35,16 +35,6 @@ int32_t ym2608_decode_open(YM2608_DECODE_HANDLE* ym2608, int32_t sample_rate, in
   ym2608->sample_rate = sample_rate;
   ym2608->channels = channels;
 
-//  ym2608->step_size = 127;
-//  ym2608->step_index = 0;
-//  ym2608->last_estimate = 0;
-
-//  ym2608->step_size2 = 127;
-//  ym2608->step_index2 = 0;
-//  ym2608->last_estimate2 = 0;
-
-//  ym2608->adpcm_counter = 0;
-
   ym2608->resample_rate = 48000;
   ym2608->resample_counter = 0;
 
@@ -70,7 +60,7 @@ void ym2608_decode_close(YM2608_DECODE_HANDLE* ym2608) {
 }
 
 //
-//  execute ym2608 decoding
+//  execute ym2608 decoding (respect to adpcmlib.s by Otankonas-san)
 //
 size_t ym2608_decode_exec(YM2608_DECODE_HANDLE* ym2608, int16_t* output_buffer, uint8_t* source_buffer, size_t source_buffer_len) {
 
@@ -139,49 +129,88 @@ size_t ym2608_decode_exec(YM2608_DECODE_HANDLE* ym2608, int16_t* output_buffer, 
 
     } else {
 
+      uint8_t* a0 = ym2608->x1;
+      uint8_t* a1 = ym2608->x2;
+      int16_t back1 = ym2608->last_estimate1;
+      int16_t back2 = ym2608->last_estimate2;
 
-    }
-
-
-
-/*
-    if (ym2608->channels == 1) {
-    
       while (source_buffer_ofs < source_buffer_len) {
 
-        ym2608->resample_counter += ym2608->sample_rate;
-        if (ym2608->resample_counter < ym2608->resample_rate) {
-
-          output_buffer[ output_buffer_ofs ++ ] = ym2608->last_estimate;
-          output_buffer[ output_buffer_ofs ++ ] = ym2608->last_estimate;
-
-        } else {
-
-          uint8_t code;
-          if ((ym2608->adpcm_counter % 2) == 0) {
-            code = source_buffer[ source_buffer_ofs ] & 0x0f;
-          } else {
-            code = (source_buffer[ source_buffer_ofs++ ] >> 4) & 0x0f;
+        for (;;) {
+          ym2608->resample_counter += ym2608->sample_rate;
+          if (ym2608->resample_counter >= ym2608->resample_rate) {
+            ym2608->resample_counter -= ym2608->resample_rate;
+            break;
           }
-          ym2608->adpcm_counter++;
-
-          uint32_t step_size = ym2608->step_size;
-          int32_t new_estimate = ym2608_decode(code, &step_size, ym2608->last_estimate);
-          output_buffer[ output_buffer_ofs ++ ] = new_estimate;
-          output_buffer[ output_buffer_ofs ++ ] = new_estimate;   // mono to stereo duplication
-          ym2608->step_size = step_size;
-          ym2608->last_estimate = new_estimate;
-
-          ym2608->resample_counter -= ym2608->resample_rate;
-
+          output_buffer[ output_buffer_ofs ++ ] = back1;
+          output_buffer[ output_buffer_ofs ++ ] = back2;
         }
+
+        int16_t d3 = 0;
+        d3 += source_buffer[ source_buffer_ofs ++ ];
+        d3 *= 8;
+        a0 += d3;
+
+        int16_t d4 = 0;
+        d4 += source_buffer[ source_buffer_ofs ++ ];
+        d4 *= 8;
+        a1 += d4;
+
+        int16_t delta1;
+        ((uint8_t*)(&delta1))[0] = a0[1];
+        ((uint8_t*)(&delta1))[1] = a0[0];
+        back1 += delta1;
+        output_buffer[ output_buffer_ofs ++ ] = back1;
+
+        int16_t delta2;
+        ((uint8_t*)(&delta2))[0] = a1[1];
+        ((uint8_t*)(&delta2))[1] = a1[0];
+        back2 += delta2;
+        output_buffer[ output_buffer_ofs ++ ] = back2;
+
+        for (;;) {
+          ym2608->resample_counter += ym2608->sample_rate;
+          if (ym2608->resample_counter >= ym2608->resample_rate) {
+            ym2608->resample_counter -= ym2608->resample_rate;
+            break;
+          }
+          output_buffer[ output_buffer_ofs ++ ] = back1;
+          output_buffer[ output_buffer_ofs ++ ] = back2;
+        }
+
+        ((uint8_t*)(&delta1))[0] = a0[3];
+        ((uint8_t*)(&delta1))[1] = a0[2];
+        back1 += delta1;
+        output_buffer[ output_buffer_ofs ++ ] = back1;
+
+        ((uint8_t*)(&delta2))[0] = a1[3];
+        ((uint8_t*)(&delta2))[1] = a1[2];
+        back2 += delta2;
+        output_buffer[ output_buffer_ofs ++ ] = back2;
+
+        int32_t ofs1;
+        ((uint8_t*)(&ofs1))[0] = a0[7];
+        ((uint8_t*)(&ofs1))[1] = a0[6]; 
+        ((uint8_t*)(&ofs1))[2] = a0[5];
+        ((uint8_t*)(&ofs1))[3] = a0[4];     
+        a0 += 4 + ofs1;
+
+        int32_t ofs2;
+        ((uint8_t*)(&ofs2))[0] = a1[7];
+        ((uint8_t*)(&ofs2))[1] = a1[6]; 
+        ((uint8_t*)(&ofs2))[2] = a1[5];
+        ((uint8_t*)(&ofs2))[3] = a1[4];     
+        a1 += 4 + ofs2;
 
       }
 
-    } else {
+      ym2608->last_estimate1 = back1;
+      ym2608->last_estimate2 = back2;
+      ym2608->x1 = a0;
+      ym2608->x2 = a1;
 
     }
-*/
+
   } else {
 
     if (ym2608->channels == 1) {
@@ -224,6 +253,65 @@ size_t ym2608_decode_exec(YM2608_DECODE_HANDLE* ym2608, int16_t* output_buffer, 
 
     } else {
 
+      uint8_t* a0 = ym2608->x1;
+      uint8_t* a1 = ym2608->x2;
+      int16_t back1 = ym2608->last_estimate1;
+      int16_t back2 = ym2608->last_estimate2;
+
+      while (source_buffer_ofs < source_buffer_len) {
+
+        int16_t d3 = 0;
+        d3 += source_buffer[ source_buffer_ofs ++ ];
+        d3 *= 8;
+        a0 += d3;
+
+        int16_t d4 = 0;
+        d4 += source_buffer[ source_buffer_ofs ++ ];
+        d4 *= 8;
+        a1 += d4;
+
+        int16_t delta1;
+        ((uint8_t*)(&delta1))[0] = a0[1];
+        ((uint8_t*)(&delta1))[1] = a0[0];
+        back1 += delta1;
+        output_buffer[ output_buffer_ofs ++ ] = back1;
+
+        int16_t delta2;
+        ((uint8_t*)(&delta2))[0] = a1[1];
+        ((uint8_t*)(&delta2))[1] = a1[0];
+        back2 += delta2;
+        output_buffer[ output_buffer_ofs ++ ] = back2;
+
+        ((uint8_t*)(&delta1))[0] = a0[3];
+        ((uint8_t*)(&delta1))[1] = a0[2];
+        back1 += delta1;
+        output_buffer[ output_buffer_ofs ++ ] = back1;
+
+        ((uint8_t*)(&delta2))[0] = a1[3];
+        ((uint8_t*)(&delta2))[1] = a1[2];
+        back2 += delta2;
+        output_buffer[ output_buffer_ofs ++ ] = back2;
+
+        int32_t ofs1;
+        ((uint8_t*)(&ofs1))[0] = a0[7];
+        ((uint8_t*)(&ofs1))[1] = a0[6]; 
+        ((uint8_t*)(&ofs1))[2] = a0[5];
+        ((uint8_t*)(&ofs1))[3] = a0[4];     
+        a0 += 4 + ofs1;
+
+        int32_t ofs2;
+        ((uint8_t*)(&ofs2))[0] = a1[7];
+        ((uint8_t*)(&ofs2))[1] = a1[6]; 
+        ((uint8_t*)(&ofs2))[2] = a1[5];
+        ((uint8_t*)(&ofs2))[3] = a1[4];     
+        a1 += 4 + ofs2;
+
+      }
+
+      ym2608->last_estimate1 = back1;
+      ym2608->last_estimate2 = back2;
+      ym2608->x1 = a0;
+      ym2608->x2 = a1;
 
     }
 
