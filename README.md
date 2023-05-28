@@ -22,6 +22,16 @@ Raspberry Pi OS 上で動作する、主にX68k向けのPCM曲データを再生
 
 ---
 
+## 動作確認済みモデルとOS
+
+- Raspberry Pi 3B+
+- Raspberry Pi 4B
+- 32bit OS Lite (デスクトップ無し) 2023-03/2023-05
+
+それ以外では確認していません。
+
+---
+
 ## How to Install
 
 ソースコードをコンパイルする必要があります。
