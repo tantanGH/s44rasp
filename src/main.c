@@ -43,6 +43,9 @@ static void show_help_message() {
   printf("     -h        ... show help message\n");
 }
 
+//
+//  main
+//
 int32_t main(int32_t argc, uint8_t* argv[]) {
 
   // default exit code
@@ -74,8 +77,10 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   int16_t use_oled = 0;
   OLED_SSD1306 ssd1306 = { 0 };
 
+  // credit
   printf("s44rasp - X68k ADPCM/PCM/WAV player for Raspberry Pi version " PROGRAM_VERSION " by tantan\n");
 
+  // command line
   for (int16_t i = 1; i < argc; i++) {
     if (argv[i][0] == '-' && strlen(argv[i]) >= 2) {
       if (argv[i][1] == 'd' && i+1 < argc) {
@@ -106,6 +111,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     }
   }
 
+  // check available ALSA formats for this device
   if (pcm_format_check) {
     snd_pcm_hw_params_t* params;
     snd_pcm_format_mask_t* format_mask;
@@ -134,6 +140,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     goto exit;
   }
 
+  // no pcm file?
   if (pcm_file_name == NULL) {
     show_help_message();
     goto exit;
@@ -237,13 +244,12 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     }
   }
 
-  // initi OLED SSD1306
+  // init OLED SSD1306
   if (use_oled) {
     if (oled_ssd1306_open(&ssd1306) != 0) {
       printf("error: OLED SSD1306 device init error.\n");
       goto exit;
     }
-    //oled_ssd1306_print(&ssd1306,0,0,"0123456789ABCDEFabcdef");
   }
 
   // open pcm file
@@ -491,12 +497,6 @@ exit:
     fp = NULL;
   }
 
-  // close alsa params
-//  if (pcm_params != NULL) {
-//    snd_pcm_hw_params_free(pcm_params);
-//    pcm_params = NULL;
-//  }
-
   // close alsa device
   if (pcm_handle != NULL) {
     snd_pcm_close(pcm_handle);
@@ -515,7 +515,7 @@ exit:
     fread_buffer = NULL;
   }
 
-  // close adpcm encoder
+  // close adpcm decoder
   if (input_format == FORMAT_ADPCM) {
     adpcm_decode_close(&adpcm_decoder);
   }

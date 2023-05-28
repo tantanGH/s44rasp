@@ -194,3 +194,9 @@ https://github.com/tantanGH/s44rasp/assets/121137457/5f559c0e-38c9-4ff0-af5c-054
 [6×8 ドット日本語フォント「k6x8」](https://littlelimit.net/k6x8.htm)
 
 各位にこの場を借りてお礼申し上げます。
+
+---
+
+## 変更履歴
+
+- 0.3.0 (2023/05/28) ... 初版
