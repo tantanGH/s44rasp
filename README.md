@@ -23,9 +23,9 @@ ADPCM/PCM/WAV player for Raspberry Pi
 
 [ONKYO DAC-HA200](https://www.jp.onkyo.com/audiovisual/headphone/dacha200/)
 
-音質もさることながら、ボリュームノブの操作感が良く、あまりに気に入ったので2台目をメルカリで調達したほどですw
+音質もさることながら、ボリュームノブの操作感が良く、あまりに気に入ったので2台持ってますw
 
-s44rasp で USB-DAC を利用するには、USB端子にDACを接続した後、`aplay -l`で確認します。
+s44rasp でこの種の USB-DAC を利用するには、USB端子にDACを接続した後、`aplay -l`で確認します。
 
         aplay -l
 
