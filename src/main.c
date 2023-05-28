@@ -233,7 +233,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     uint8_t* c = strrchr(pcm_file_name, '/');
     sprintf(mes, "FILE: %s", c != NULL ? c+1 : pcm_file_name);
     oled_ssd1306_print(&ssd1306, 0, 0, mes);
-    sprintf(mes, "SIZE: %d bytes", pcm_data_size);
+    sprintf(mes, "SIZE: %'d", pcm_data_size);
     oled_ssd1306_print(&ssd1306, 0, 1, mes);
     sprintf(mes, "FORMAT: %s", 
       input_format == FORMAT_RAW ? "RAW" : 
