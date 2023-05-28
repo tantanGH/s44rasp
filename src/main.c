@@ -217,6 +217,12 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     goto exit;
   }
 
+  // dummy read for disk cache
+  size_t dummy_read_size = pcm_freq * 2 * 10;
+  uint8_t* dummy_buffer = malloc(dummy_read_size);
+  fread(dummy_buffer, sizeof(uint8_t), dummy_read_size, fp);
+  fseek(fp, 0, SEEK_SET);
+
   // read header part of WAV file
   size_t skip_offset = 0;
   if (input_format == FORMAT_WAV) {
