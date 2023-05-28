@@ -11,6 +11,7 @@ int32_t wav_decode_open(WAV_DECODE_HANDLE* wav, int16_t up_sampling) {
   int32_t rc = -1;
 
   wav->up_sampling = up_sampling;
+  wav->resample_rate = 48000;
 
   wav->sample_rate = -1;
   wav->channels = -1;
@@ -200,7 +201,7 @@ size_t wav_decode_exec(WAV_DECODE_HANDLE* wav, int16_t* output_buffer, int16_t* 
 
   if (wav->sample_rate <= 32000 || wav->up_sampling) {
 
-    if (pcm->channels == 1) {
+    if (wav>channels == 1) {
 
       // mono to stereo duplication
       while (source_buffer_ofs < source_buffer_len) {
@@ -209,12 +210,12 @@ size_t wav_decode_exec(WAV_DECODE_HANDLE* wav, int16_t* output_buffer, int16_t* 
         output_buffer[ output_buffer_ofs ++ ] = source_buffer[ source_buffer_ofs ];
 
         // up sampling
-        pcm->resample_counter += pcm->sample_rate;
-        if (pcm->resample_counter < pcm->resample_rate) {
+        wav->resample_counter += wav->sample_rate;
+        if (wav->resample_counter < wav->resample_rate) {
           // do not increment
         } else {
           source_buffer_ofs ++;
-          pcm->resample_counter -= pcm->resample_rate;
+          wav->resample_counter -= wav->resample_rate;
         }
 
       }
@@ -229,12 +230,12 @@ size_t wav_decode_exec(WAV_DECODE_HANDLE* wav, int16_t* output_buffer, int16_t* 
         output_buffer[ output_buffer ++ ] = source_buffer[ source_buffer_ofs + 1 ];
 
         // up sampling
-        pcm->resample_counter += pcm->sample_rate;
-        if (pcm->resample_counter < pcm->resample_rate) {
+        wav->resample_counter += wav->sample_rate;
+        if (wav->resample_counter < wav->resample_rate) {
           // do not increment
         } else {
           source_buffer_ofs += 2;
-          pcm->resample_counter -= pcm->resample_rate;
+          wav->resample_counter -= wav->resample_rate;
         }
 
       }
