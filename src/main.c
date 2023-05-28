@@ -357,7 +357,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
       } else if (input_format == FORMAT_YM2608) {
         decode_len = ym2608_decode_exec(&ym2608_decoder, pcm_buffer, fread_buffer, len);
       }
-      printf("decode_len = %d, len = %d\n", decode_len, len);
+      //printf("decode_len = %d, len = %d\n", decode_len, len);
       if ((alsa_rc = snd_pcm_writei(pcm_handle, (const void*)pcm_buffer, decode_len / 2)) < 0) {    
         if (snd_pcm_recover(pcm_handle, alsa_rc, 0) < 0) {
           printf("error: fatal pcm data write error.\n");
