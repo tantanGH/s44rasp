@@ -12,11 +12,11 @@ typedef struct {
 
   uint32_t step_size;
   int16_t step_index;
-  int16_t last_estimate;
+  int32_t last_estimate;
 
   uint32_t step_size2;
   int16_t step_index2;
-  int16_t last_estimate2;
+  int32_t last_estimate2;
 
   size_t adpcm_counter;
 

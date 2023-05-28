@@ -141,8 +141,8 @@ size_t ym2608_decode_exec(YM2608_DECODE_HANDLE* ym2608, int16_t* output_buffer, 
         }
         ym2608->adpcm_counter++;
 
-        int16_t step_size = ym2608->step_size;
-        int16_t new_estimate = ym2608_decode(code, &step_size, ym2608->last_estimate);
+        uint32_t step_size = ym2608->step_size;
+        int32_t new_estimate = ym2608_decode(code, &step_size, ym2608->last_estimate);
         output_buffer[ output_buffer_ofs ++ ] = new_estimate;
         output_buffer[ output_buffer_ofs ++ ] = new_estimate;   // mono to stereo duplication
         ym2608->step_size = step_size;
