@@ -12,13 +12,12 @@ typedef struct {
 
   int32_t resample_rate;
   size_t resample_counter;
-
-  int16_t use_24bit;
+  int16_t up_sampling;
 
 } RAW_DECODE_HANDLE;
 
-int32_t raw_decode_open(RAW_DECODE_HANDLE* pcm, int32_t sample_rate, int16_t channels, int16_t use_24bit);
+int32_t raw_decode_open(RAW_DECODE_HANDLE* pcm, int32_t sample_rate, int16_t channels, int16_t up_sampling);
 void raw_decode_close(RAW_DECODE_HANDLE* pcm);
-size_t raw_decode_exec(RAW_DECODE_HANDLE* pcm, void* output_buffer, int16_t* source_buffer, size_t source_buffer_len);
+size_t raw_decode_exec(RAW_DECODE_HANDLE* pcm, int16_t* output_buffer, int16_t* source_buffer, size_t source_buffer_len);
 
 #endif

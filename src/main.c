@@ -29,9 +29,9 @@ static void sigint_handler(int signal) {
 static void show_help_message() {
   printf("usage: s44rasp [options] <input-file[.pcm|.sXX|.mXX|.aXX|.nXX|.wav]>\n");
   printf("options:\n");
-  printf("     -d <alsa-device> ... ALSA PCM device name (i.e. hw:3,0)\n");
-  printf("     -o               ... enable OLED(SSD1306) display\n");
-  printf("     -p               ... use 24bit bit depth mode (for PCM51xx)\n");
+  printf("     -d hw:x,y ... ALSA PCM device name (i.e. hw:3,0)\n");
+  printf("     -o        ... enable OLED(SSD1306) display\n");
+  printf("     -u        ... upsampling to 48kHz (default for 15.6kHz/32kHz source)\n");
 //  printf("     -s <serial-device>  ... serial device name (i.e. /dev/serial0)\n");
 //  printf("     -l <latency>        ... ALSA PCM latency in msec (default:100ms)\n");
 //  printf("     -f           ... supported format check\n");
@@ -51,7 +51,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
   uint8_t* pcm_file_name = NULL;
   uint8_t* pcm_device_name = NULL;
   uint32_t pcm_latency = 50000;
-  int16_t use_24bit = 0;
+  int16_t up_sampling = 0;
 //  int16_t pcm_format_check = 0;
   int32_t alsa_rc = 0;
   FILE* fp = NULL;
@@ -80,8 +80,8 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
 //        pcm_format_check = 1;
       } else if (argv[i][1] == 'o') {
         use_oled = 1;
-      } else if (argv[i][1] == 'p') {
-        use_24bit = 1;
+      } else if (argv[i][1] == 'u') {
+        up_sampling = 1;
       } else if (argv[i][1] == 'h') {
         show_help_message();
         goto exit;
@@ -140,6 +140,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     input_format = FORMAT_YM2608;
     pcm_freq = 32000;
     pcm_channels = 2;
+    up_sampling = 1;
   } else if (stricmp(".a44", pcm_file_exp) == 0) {
     input_format = FORMAT_YM2608;
     pcm_freq = 44100;
@@ -152,6 +153,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     input_format = FORMAT_YM2608;
     pcm_freq = 32000;
     pcm_channels = 1;
+    up_sampling = 1;
   } else if (stricmp(".n44", pcm_file_exp) == 0) {
     input_format = FORMAT_YM2608;
     pcm_freq = 44100;
@@ -179,7 +181,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
 
   // init raw pcm decoder if needed
   if (input_format == FORMAT_RAW) {
-    if (raw_decode_open(&raw_decoder, pcm_freq, pcm_channels, use_24bit) != 0) {
+    if (raw_decode_open(&raw_decoder, pcm_freq, pcm_channels, up_sampling) != 0) {
       printf("error: PCM decoder initialization error.\n");
       goto exit;
     }
@@ -187,7 +189,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
 
   // init wav decoder if needed
   if (input_format == FORMAT_WAV) {
-    if (wav_decode_open(&wav_decoder, use_24bit) != 0) {
+    if (wav_decode_open(&wav_decoder, up_sampling) != 0) {
       printf("error: WAV decoder initialization error.\n");
       goto exit;
     }

@@ -6,9 +6,11 @@
 //
 //  init wav decoder handle
 //
-int32_t wav_decode_open(WAV_DECODE_HANDLE* wav, int16_t use_24bit) {
+int32_t wav_decode_open(WAV_DECODE_HANDLE* wav, int16_t up_sampling) {
 
   int32_t rc = -1;
+
+  wav->up_sampling = up_sampling;
 
   wav->sample_rate = -1;
   wav->channels = -1;
@@ -17,8 +19,6 @@ int32_t wav_decode_open(WAV_DECODE_HANDLE* wav, int16_t use_24bit) {
   wav->bits_per_sample = -1;
   wav->duration = -1;
 
-  wav->use_24bit = use_24bit;
- 
   rc = 0;
 
 exit:
@@ -192,48 +192,58 @@ exit:
 //
 //  decode
 //
-size_t wav_decode_exec(WAV_DECODE_HANDLE* wav, void* output_buffer, int16_t* source_buffer, size_t source_buffer_len) {
+size_t wav_decode_exec(WAV_DECODE_HANDLE* wav, int16_t* output_buffer, int16_t* source_buffer, size_t source_buffer_len) {
 
   size_t source_buffer_ofs = 0;
   size_t output_buffer_ofs = 0;
   size_t output_buffer_len = 0;
 
-  if (wav->sample_rate == 44100 && wav->use_24bit) {
-  
-    uint8_t* source_buffer_uint8 = (uint8_t*)source_buffer;
-    uint8_t* output_buffer_uint8 = (uint8_t*)output_buffer; 
+  if (wav->sample_rate <= 32000 || wav->up_sampling) {
 
-    if (wav->channels == 1) {
+    if (pcm->channels == 1) {
 
+      // mono to stereo duplication
       while (source_buffer_ofs < source_buffer_len) {
-        output_buffer_uint8[ output_buffer_ofs ++ ] = 0;
-        output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs * 2 + 0 ];
-        output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs * 2 + 1 ];
-        output_buffer_uint8[ output_buffer_ofs ++ ] = 0;
-        output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs * 2 + 0 ];
-        output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs * 2 + 1 ];
-        source_buffer_ofs ++;
+
+        output_buffer[ output_buffer_ofs ++ ] = source_buffer[ source_buffer_ofs ];
+        output_buffer[ output_buffer_ofs ++ ] = source_buffer[ source_buffer_ofs ];
+
+        // up sampling
+        pcm->resample_counter += pcm->sample_rate;
+        if (pcm->resample_counter < pcm->resample_rate) {
+          // do not increment
+        } else {
+          source_buffer_ofs ++;
+          pcm->resample_counter -= pcm->resample_rate;
+        }
+
       }
 
-      output_buffer_len = source_buffer_ofs;
+      output_buffer_len = output_buffer_ofs;
 
     } else {
 
-      // endian converion
       while (source_buffer_ofs < source_buffer_len) {
-        output_buffer_uint8[ output_buffer_ofs ++ ] = 0;
-        output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs * 2 + 0 ];
-        output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs * 2 + 1 ];
-        source_buffer_ofs ++;
+
+        output_buffer[ output_buffer ++ ] = source_buffer[ source_buffer_ofs + 0 ];
+        output_buffer[ output_buffer ++ ] = source_buffer[ source_buffer_ofs + 1 ];
+
+        // up sampling
+        pcm->resample_counter += pcm->sample_rate;
+        if (pcm->resample_counter < pcm->resample_rate) {
+          // do not increment
+        } else {
+          source_buffer_ofs += 2;
+          pcm->resample_counter -= pcm->resample_rate;
+        }
+
       }
 
-      output_buffer_len = source_buffer_ofs;
+      output_buffer_len = output_buffer_ofs / 2;
 
     }
 
   } else {
-
-    int16_t* output_buffer_int16 = (int16_t*)output_buffer; 
 
     if (wav->channels == 1) {
 
