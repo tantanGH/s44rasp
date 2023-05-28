@@ -188,24 +188,24 @@ size_t ym2608_decode_exec(YM2608_DECODE_HANDLE* ym2608, int16_t* output_buffer, 
         printf("d3=%02x, a0=%x\n", d3, a0);
 
         int16_t delta;
-        (uint8_t*)(&delta)[0] = a0[1];
-        (uint8_t*)(&delta)[1] = a0[0];
+        ((uint8_t*)(&delta))[0] = a0[1];
+        ((uint8_t*)(&delta))[1] = a0[0];
         back += delta;
         output_buffer[ output_buffer_ofs ++ ] = back;
         printf("back=%x, delta=%d\n", back, delta);
 
         int16_t delta;
-        (uint8_t*)(&delta)[0] = a0[3];
-        (uint8_t*)(&delta)[1] = a0[2];
+        ((uint8_t*)(&delta))[0] = a0[3];
+        ((uint8_t*)(&delta))[1] = a0[2];
         back += delta;
         output_buffer[ output_buffer_ofs ++ ] = back;
         printf("back=%x, delta=%d\n", back, delta);
 
         int32_t ofs;
-        (uint8_t*)(&ofs)[0] = a0[7];
-        (uint8_t*)(&ofs)[1] = a0[6];
-        (uint8_t*)(&ofs)[2] = a0[5];
-        (uint8_t*)(&ofs)[3] = a0[4];        
+        ((uint8_t*)(&delta))[0] = a0[7];
+        ((uint8_t*)(&delta))[1] = a0[6]; 
+        ((uint8_t*)(&delta))[0] = a0[5];
+        ((uint8_t*)(&delta))[1] = a0[4];     
         printf("ofs=%d, a0=%x\n", ofs, a0);
         a0 += 4 + ofs;
         printf("ofs=%d, a0=%x\n", ofs, a0);
