@@ -180,36 +180,36 @@ size_t ym2608_decode_exec(YM2608_DECODE_HANDLE* ym2608, int16_t* output_buffer, 
 
       while (source_buffer_ofs < source_buffer_len) {
 
-        printf("conv_table=%x, a0=%x, back=%x\n", ym2608_conv_table, a0, back);
+        //printf("conv_table=%x, a0=%x, back=%x\n", ym2608_conv_table, a0, back);
 
         int16_t d3 = 0;
         d3 += source_buffer[ source_buffer_ofs ++ ];
         d3 *= 8;
         a0 += d3;
-        printf("d3=%02x, a0=%x\n", d3, a0);
+        //printf("d3=%02x, a0=%x\n", d3, a0);
 
         int16_t delta1;
         ((uint8_t*)(&delta1))[0] = a0[1];
         ((uint8_t*)(&delta1))[1] = a0[0];
         back += delta1;
         output_buffer[ output_buffer_ofs ++ ] = back;
-        printf("back=%x, delta1=%d\n", back, delta1);
+        //printf("back=%x, delta1=%d\n", back, delta1);
 
         int16_t delta2;
         ((uint8_t*)(&delta2))[0] = a0[3];
         ((uint8_t*)(&delta2))[1] = a0[2];
         back += delta2;
         output_buffer[ output_buffer_ofs ++ ] = back;
-        printf("back=%x, delta2=%d\n", back, delta2);
+        //printf("back=%x, delta2=%d\n", back, delta2);
 
         int32_t ofs;
         ((uint8_t*)(&ofs))[0] = a0[7];
         ((uint8_t*)(&ofs))[1] = a0[6]; 
         ((uint8_t*)(&ofs))[2] = a0[5];
         ((uint8_t*)(&ofs))[3] = a0[4];     
-        printf("ofs=%d, a0=%x\n", ofs, a0);
+        //printf("ofs=%d, a0=%x\n", ofs, a0);
         a0 += 4 + ofs;
-        printf("ofs=%d, a0=%x\n", ofs, a0);
+        //printf("ofs=%d, a0=%x\n", ofs, a0);
 
       }
 
