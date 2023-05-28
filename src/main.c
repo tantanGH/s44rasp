@@ -140,7 +140,6 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     input_format = FORMAT_YM2608;
     pcm_freq = 32000;
     pcm_channels = 2;
-    up_sampling = 1;
   } else if (stricmp(".a44", pcm_file_exp) == 0) {
     input_format = FORMAT_YM2608;
     pcm_freq = 44100;
@@ -153,7 +152,6 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     input_format = FORMAT_YM2608;
     pcm_freq = 32000;
     pcm_channels = 1;
-    up_sampling = 1;
   } else if (stricmp(".n44", pcm_file_exp) == 0) {
     input_format = FORMAT_YM2608;
     pcm_freq = 44100;
@@ -324,7 +322,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
     goto exit;
   }
 
-// in case of 15.6kHz or 32kHz, upscale to 48kHz
+  // in case of 15.6kHz or 32kHz, upscale to 48kHz
   if ((alsa_rc = snd_pcm_set_params(pcm_handle, SND_PCM_FORMAT_S16_LE, SND_PCM_ACCESS_RW_INTERLEAVED, 2,
                           (pcm_freq < 44100 || up_sampling) ? 48000 : pcm_freq, 1, pcm_latency)) != 0) {
     printf("error: pcm device setting error. (%s)\n", snd_strerror(alsa_rc));
