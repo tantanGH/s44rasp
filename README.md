@@ -46,6 +46,7 @@ Raspberry Pi OS 上で動作する、主にX68k向けのPCM曲データを再生
         mkdir oss
         cd oss
         git clone https://github.com/tantanGH/s44rasp
+        cd s44rasp
         cd src
         make
 
