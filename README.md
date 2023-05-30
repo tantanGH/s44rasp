@@ -36,9 +36,9 @@ Raspberry Pi OS 上で動作する、主にX68k向けのPCM曲データを再生
 
 ソースコードをコンパイルする必要があります。
 
-事前準備として `libasound2-dev` を導入します。
+事前準備として `git` `libasound2-dev` を導入します。
 
-        sudo apt-get install libasound2-dev
+        sudo apt-get install git libasound2-dev
 
 このリポジトリを clone してビルドします。
 
