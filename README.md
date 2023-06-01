@@ -194,6 +194,21 @@ https://github.com/tantanGH/s44rasp/assets/121137457/5f559c0e-38c9-4ff0-af5c-054
 
 ---
 
+## Raspberry Pi のアンダークロック
+
+特に Raspberry Pi 4B は高スペックな分、発熱量も大きいです。`s44rasp` は大してCPUを使いませんのでアンダークロック動作させても大丈夫です。
+
+例えば `/boot/config.txt` に以下を追記することで CPUクロック上限を300MHzにすることができます。
+
+        arm_freq=300
+        over_voltage=-4
+
+今どのクロックで動いているかを知るには `cpufreq-info` コマンドが便利です。入っていない場合は以下で導入できます。(最後のアスタリスクを忘れずに)
+
+        sudo apt install cpufreq*
+
+---
+
 ## Special Thanks
 
 - .a44形式(YM2608)のデコードについては、X68kでの標準ライブラリである Otankonas氏のライブラリと完全互換とするため、氏のadpcmlibライブラリの生成した変換テーブルをそのまま使わせてもらう形での実装としています。
