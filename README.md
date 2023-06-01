@@ -20,7 +20,7 @@ Raspberry Pi OS 上で動作する、主にX68k向けのPCM曲データを再生
 
 48kHzより上の周波数のデータには対応していません。15.6kHz/32kHzのデータは48kHzにアップサンプリングされます。
 
-<img src='s44rasp.jpeg' width='800'/>
+<img src='images/s44rasp.jpeg' width='800'/>
 
 ---
 
