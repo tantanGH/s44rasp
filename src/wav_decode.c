@@ -43,7 +43,7 @@ int32_t wav_decode_parse_header(WAV_DECODE_HANDLE* wav, FILE* fp) {
   size_t bytes_read = 0;
 
   // ChunkID
-  uint8_t buf[5];
+  char buf[5];
   bytes_read += fread(buf, sizeof(uint8_t), 4, fp);
   buf[4] = '\0';
   if (strcmp(buf, "RIFF") != 0) {

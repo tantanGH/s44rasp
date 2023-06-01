@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 #include <signal.h>
 
 // alsa
@@ -34,7 +35,7 @@ static void sigint_handler(int signal) {
 //  show help message
 //
 static void show_help_message() {
-  printf("usage: s44rasp [options] <input-file[.pcm|.sXX|.mXX|.aXX|.nXX|.wav]>\n");
+  printf("usage: s44rasp [options] <input-file(.pcm|.sXX|.mXX|.aXX|.nXX|.wav)>\n");
   printf("options:\n");
   printf("     -d hw:x,y ... ALSA PCM device name (i.e. hw:3,0)\n");
   printf("     -o        ... enable OLED(SSD1306) display\n");
@@ -46,7 +47,7 @@ static void show_help_message() {
 //
 //  main
 //
-int32_t main(int32_t argc, uint8_t* argv[]) {
+int32_t main(int32_t argc, char* argv[]) {
 
   // default exit code
   int32_t rc = -1;
@@ -314,7 +315,7 @@ int32_t main(int32_t argc, uint8_t* argv[]) {
 
   // describe PCM file information
   printf("File name     : %s\n", pcm_file_name);
-  printf("Data size     : %d [bytes]\n", pcm_data_size);
+  printf("Data size     : %zu [bytes]\n", pcm_data_size);
   printf("Data format   : %s\n", 
     input_format == FORMAT_WAV ? "WAV" :
     input_format == FORMAT_YM2608 ? "ADPCM(YM2608)" :
