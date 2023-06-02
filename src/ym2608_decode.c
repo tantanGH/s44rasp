@@ -48,7 +48,7 @@ int32_t ym2608_decode_open(YM2608_DECODE_HANDLE* ym2608, int32_t sample_rate, in
 
   rc = 0;
 
-exit:
+//exit:
   return rc;
 }
 

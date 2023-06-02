@@ -3,7 +3,7 @@ TARGET = s44rasp
 CC = gcc
 LD = gcc
 
-CFLAGS = -O2
+CFLAGS = -O2 -Wall
 LDFLAGS =
 LIBS = -lasound -lm
 

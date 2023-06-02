@@ -101,7 +101,7 @@ int32_t adpcm_decode_open(ADPCM_DECODE_HANDLE* adpcm) {
 
   rc = 0;
 
-exit:
+//exit:
   return rc;
 }
 
