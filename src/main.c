@@ -60,8 +60,8 @@ int32_t main(int32_t argc, char* argv[]) {
   // pcm attribs
   int16_t* pcm_buffer = NULL; 
   void* fread_buffer = NULL;
-  uint8_t* pcm_file_name = NULL;
-  uint8_t* pcm_device_name = NULL;
+  char* pcm_file_name = NULL;
+  char* pcm_device_name = NULL;
   int16_t up_sampling = 0;
   int16_t pcm_format_check = 0;
 
@@ -287,9 +287,9 @@ int32_t main(int32_t argc, char* argv[]) {
 
   // OLED information display
   if (use_oled) {
-    static uint8_t mes[128];
+    static char mes[128];
 
-    uint8_t* c = strrchr(pcm_file_name, '/');
+    char* c = strrchr(pcm_file_name, '/');
     sprintf(mes, "  FILE: %s", c != NULL ? c+1 : pcm_file_name);
     oled_ssd1306_print(&ssd1306, 0, 0, mes);
 
@@ -517,24 +517,16 @@ exit:
   }
 
   // close adpcm decoder
-  if (input_format == FORMAT_ADPCM) {
-    adpcm_decode_close(&adpcm_decoder);
-  }
+  adpcm_decode_close(&adpcm_decoder);
 
   // close raw decoder
-  if (input_format == FORMAT_RAW) {
-    raw_decode_close(&raw_decoder);
-  }
+  raw_decode_close(&raw_decoder);
 
   // close wav decoder
-  if (input_format == FORMAT_WAV) {
-    wav_decode_close(&wav_decoder);
-  }
+  wav_decode_close(&wav_decoder);
 
   // close ym2608 decoder
-  if (input_format == FORMAT_YM2608) {
-    ym2608_decode_close(&ym2608_decoder);
-  }
+  ym2608_decode_close(&ym2608_decoder);
 
   // close OLED SSD1306
   if (use_oled) {

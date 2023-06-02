@@ -50,6 +50,7 @@ static inline int16_t msm6258v_decode(uint8_t code, int16_t* step_index, int16_t
   return estimate;
 }
 
+/*
 //
 //  MSM6258V ADPCM encode
 //
@@ -81,6 +82,7 @@ static uint8_t msm6258v_encode(int16_t current_data, int16_t last_estimate, int1
 
   return code;
 }
+*/
 
 //
 //  initialize adpcm decoder handle
