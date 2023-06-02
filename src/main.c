@@ -148,7 +148,7 @@ int32_t main(int32_t argc, char* argv[]) {
   }
 
   // input format check
-  uint8_t* pcm_file_exp = pcm_file_name + strlen(pcm_file_name) - 4;
+  char* pcm_file_exp = pcm_file_name + strlen(pcm_file_name) - 4;
   int16_t input_format = FORMAT_ADPCM;
   int32_t pcm_freq = 15625;
   int16_t pcm_channels = 1;
@@ -324,7 +324,7 @@ int32_t main(int32_t argc, char* argv[]) {
 
   // describe playback drivers
   printf("PCM driver    : %s\n", "ALSA");
-  printf("PCM device    : %s\n", pcm_device_name != NULL ? pcm_device_name : (uint8_t*)"default");
+  printf("PCM device    : %s\n", pcm_device_name != NULL ? pcm_device_name : "default");
 
   if (input_format == FORMAT_ADPCM) {
     float pcm_1sec_size = pcm_freq * 0.5;
