@@ -373,7 +373,7 @@ int32_t main(int32_t argc, char* argv[]) {
   //printf("pcm_buffer_len = %d\n", pcm_buffer_len);
 
   // init ALSA device
-  if ((alsa_rc = snd_pcm_open(&pcm_handle, pcm_device_name != NULL ? pcm_device_name : (uint8_t*)"default", 
+  if ((alsa_rc = snd_pcm_open(&pcm_handle, pcm_device_name != NULL ? pcm_device_name : "default", 
                     SND_PCM_STREAM_PLAYBACK, 0)) != 0) {
     printf("error: pcm device (%s) open error. (%s)\n", pcm_device_name, snd_strerror(alsa_rc));
     goto exit;
