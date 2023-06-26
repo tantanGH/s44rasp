@@ -1,7 +1,7 @@
 #ifndef __H_S44RASP__
 #define __H_S44RASP__
 
-#define PROGRAM_VERSION "0.3.3 (2023/06/26)"
+#define PROGRAM_VERSION "0.3.2 (2023/06/03)"
 
 #define FORMAT_ADPCM  (0)
 #define FORMAT_RAW    (1)
