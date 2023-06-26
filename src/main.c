@@ -386,9 +386,10 @@ int32_t main(int32_t argc, char* argv[]) {
     goto exit;
   }
 
-  // sigint handler
+  // sigint/sigterm handler
   abort_flag = 0;
   signal(SIGINT, sigint_handler);
+  signal(SIGTERM, sigint_handler);
 
   printf("\nnow playing ... push CTRL+C to quit.\n");
 
