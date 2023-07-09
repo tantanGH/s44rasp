@@ -12,6 +12,7 @@
 #include "raw_decode.h"
 #include "wav_decode.h"
 #include "ym2608_decode.h"
+#include "macs_decode.h"
 
 // oled
 #include "oled_ssd1306.h"
