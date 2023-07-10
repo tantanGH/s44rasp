@@ -11,7 +11,6 @@ typedef struct {
   int16_t channels;
   int32_t skip_offset;
   int32_t total_bytes;
-  int32_t duration;
   
   int32_t resample_rate;
   size_t resample_counter;

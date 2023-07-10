@@ -16,7 +16,7 @@ int32_t macs_decode_open(MACS_DECODE_HANDLE* macs, int16_t up_sampling) {
 
   macs->sample_rate = -1;
   macs->channels = -1;
-  macs->duration = -1;
+  macs->total_bytes = 0;
 
   rc = 0;
 
@@ -79,7 +79,6 @@ int32_t macs_decode_parse_header(MACS_DECODE_HANDLE* macs, FILE* fp) {
                           buf[ read_ofs + 7 ] * 256 * 256 +
                           buf[ read_ofs + 8 ] * 256 +
                           buf[ read_ofs + 9 ];
-      macs->duration = macs->sample_rate * macs->channels * sizeof(int16_t);
       rc = 0;
       break;
     }

@@ -416,9 +416,10 @@ int32_t main(int32_t argc, char* argv[]) {
 
   // describe macs format
   if (input_format == FORMAT_MACS) {
+    float pcm_1sec_size = pcm_freq * 2;
     printf("PCM frequency : %d [Hz]\n", pcm_freq);
     printf("PCM channels  : %s\n", pcm_channels == 1 ? "mono" : "stereo");
-    printf("PCM length    : %4.2f [sec]\n", (float)macs_decoder.duration / pcm_freq);
+    printf("PCM length    : %4.2f [sec]\n", (float)pcm_data_size / pcm_channels / pcm_1sec_size);
   }
 
   // allocate file read buffer
