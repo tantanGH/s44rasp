@@ -500,7 +500,8 @@ int32_t main(int32_t argc, char* argv[]) {
     size_t fread_len = 0;
 
     do {
-      size_t len = fread(fread_buffer, sizeof(int16_t), fread_buffer_len, fp);
+      size_t remain = pcm_data_size / 2 - fread_len;
+      size_t len = fread(fread_buffer, sizeof(int16_t), remain < fread_buffer_len ? remain : fread_buffer_len, fp);
       if (len == 0) break;
       fread_len += len;
       size_t decode_len = 0;
