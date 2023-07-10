@@ -42,7 +42,7 @@ int32_t macs_decode_parse_header(MACS_DECODE_HANDLE* macs, FILE* fp) {
   uint8_t buf[512];
   size_t bytes_read = fread(buf, sizeof(uint8_t), 512, fp);
   if (memcmp(buf + 0, "MACSDATA", 8) != 0) {
-    printf("error: not MACS data. (%s)\n", buf);
+    printf("error: not MACS data.\n", buf);
     goto exit;
   }
   if (buf[ 0x0e ] != 0x00 || buf[ 0x0f ] != 0x01) {

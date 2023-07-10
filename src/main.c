@@ -309,6 +309,7 @@ int32_t main(int32_t argc, char* argv[]) {
   // check file size
   fseek(fp, 0, SEEK_END);
   size_t pcm_data_size = ftell(fp);
+  fseek(fp, 0, SEEK_SET);
 
   // read header part of WAV/MCS file
   size_t skip_offset = 0;
