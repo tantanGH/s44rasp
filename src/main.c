@@ -309,7 +309,6 @@ int32_t main(int32_t argc, char* argv[]) {
   // check file size
   fseek(fp, 0, SEEK_END);
   size_t pcm_data_size = ftell(fp);
-  fseek(fp, skip_offset, SEEK_SET);
 
   // read header part of WAV/MCS file
   size_t skip_offset = 0;
@@ -332,6 +331,7 @@ int32_t main(int32_t argc, char* argv[]) {
     skip_offset = macs_decoder.skip_offset;
     pcm_data_size = macs_decoder.total_bytes;   // overwrite
   }
+  fseek(fp, skip_offset, SEEK_SET);
 
   // dummy read for disk cache to avoid buffer underrun
   size_t dummy_read_size = pcm_freq * 2 * 2 * 8;
