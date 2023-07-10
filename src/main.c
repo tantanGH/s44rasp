@@ -308,7 +308,7 @@ int32_t main(int32_t argc, char* argv[]) {
 
   // check file size
   fseek(fp, 0, SEEK_END);
-  size_t pcm_data_size = ftell(fp) - skip_offset;
+  size_t pcm_data_size = ftell(fp);
   fseek(fp, skip_offset, SEEK_SET);
 
   // read header part of WAV/MCS file
@@ -321,6 +321,7 @@ int32_t main(int32_t argc, char* argv[]) {
     pcm_freq = wav_decoder.sample_rate;
     pcm_channels = wav_decoder.channels;
     skip_offset = wav_decoder.skip_offset;
+    pcm_data_size -= skip_offset;             // overwrite
   } else if (input_format == FORMAT_MACS) {
     if (macs_decode_parse_header(&macs_decoder, fp) < 0) {
       printf("error: macs header parse error.\n");
@@ -328,8 +329,8 @@ int32_t main(int32_t argc, char* argv[]) {
     }
     pcm_freq = macs_decoder.sample_rate;
     pcm_channels = macs_decoder.channels;
-    pcm_data_size = macs_decoder.total_bytes;   // overwrite
     skip_offset = macs_decoder.skip_offset;
+    pcm_data_size = macs_decoder.total_bytes;   // overwrite
   }
 
   // dummy read for disk cache to avoid buffer underrun
