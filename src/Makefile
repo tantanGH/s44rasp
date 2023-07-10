@@ -7,7 +7,7 @@ CFLAGS = -O2 -Wall
 LDFLAGS =
 LIBS = -lasound -lm
 
-OBJS = adpcm_decode.o raw_decode.o wav_decode.o ym2608_decode.o ym2608_table.o oled_ssd1306.o main.o
+OBJS = adpcm_decode.o raw_decode.o wav_decode.o ym2608_decode.o ym2608_table.o macs_decode.o oled_ssd1306.o main.o
 
 all: $(TARGET)
 

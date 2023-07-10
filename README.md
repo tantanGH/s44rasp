@@ -11,14 +11,15 @@ Raspberry Pi OS 上で動作する、主にX68k向けのPCM曲データを再生
 
 以下のPCM形式をサポートしています。ファイルの拡張子で判別します。
 
-- .pcm ... X68k 4bit-12bit ADPCM (15.6kHz/mono)
-- .s32/.s44/.s48 ... 16bit Raw PCM (big endian) stereo
-- .m32/.m44/.m48 ... 16bit Raw PCM (big endian) mono
-- .a32/.a44/.a48 ... YM2608 4bit-16bit ADPCM stereo
-- .n32/.n44/.n48 ... YM2608 4bit-16bit ADPCM mono
+- .s22/.s24/.s32/.s44/.s48 ... 16bit Raw PCM (big endian) stereo
+- .m22/.m24/.m32/.m44/.m48 ... 16bit Raw PCM (big endian) mono
+- .a22/.a24/.a32/.a44/.a48 ... YM2608 4bit-16bit ADPCM stereo
+- .n22/.n24/.n32/.n44/.n48 ... YM2608 4bit-16bit ADPCM mono
 - .wav ... Windows WAV 16bit Raw PCM (little endian) stereo/mono
+- .pcm ... X680x0 4bit-12bit ADPCM (15.6kHz/mono)
+- .mcs ... X680x0 MACS animation data (16bit PCM only)
 
-48kHzより上の周波数のデータには対応していません。15.6kHz/32kHzのデータは48kHzにアップサンプリングされます。
+48kHzより上の周波数のデータには対応していません。15.6kHzから32kHzのデータは48kHzにアップサンプリングされます。
 
 <img src='images/s44rasp.jpeg' width='800'/>
 
@@ -28,7 +29,7 @@ Raspberry Pi OS 上で動作する、主にX68k向けのPCM曲データを再生
 
 - Raspberry Pi 3B+
 - Raspberry Pi 4B
-- 32bit OS Lite (デスクトップ無し) 2023-03/2023-05
+- 32bit OS Lite (デスクトップ無し) 2023-05
 
 それ以外では確認していません。
 
@@ -67,8 +68,8 @@ Raspberry Pi OS 上で動作する、主にX68k向けのPCM曲データを再生
           -f ... 指定デバイスでサポートされたフォーマットの一覧表示
           -h ... ヘルプメッセージの表示
 
-出力デバイス名は `hw:0,0` のようなもので、`hw:` に続いてカード番号とサブデバイス番号を入れます。
-カード番号は `aplay -l` で知ることができます。サブデバイス番号は通常0です。
+出力デバイス名は `hw:0,0` のようなもので、`hw:` に続いてカード番号(デバイス名)とサブデバイス番号を入れます。
+カード番号等は `aplay -l` で知ることができます。サブデバイス番号は通常0です。
 
 ---
 
@@ -109,6 +110,12 @@ s44rasp でこの種の USB-DAC を利用するには、USB端子にDACを接続
 この場合は card 1 として認識されていますので、s44rasp で利用するには以下のように指定すればok。
 
         s44rasp -d hw:1,0 hogehoge.s44
+
+または
+
+        s44rasp -d hw:DACHA200,0 hogehoge.s44
+
+と指定します。カード番号は認識順に決まり、たまに入れ替わったりするので、デバイス名を指定することをお勧めします。
 
 ---
 
@@ -223,6 +230,7 @@ https://github.com/tantanGH/s44rasp/assets/121137457/5f559c0e-38c9-4ff0-af5c-054
 
 ## 変更履歴
 
+- 0.4.0 (2023/07/10) ... 16/22/24kHz raw, .mcs 対応
 - 0.3.2 (2023/06/03) ... -Wall で警告が出ないように調整
 - 0.3.1 (2023/06/01) ... DOC更新・微調整
 - 0.3.0 (2023/05/28) ... 初版

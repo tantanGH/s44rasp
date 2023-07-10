@@ -13,6 +13,7 @@ typedef struct {
   int16_t block_align;
   int16_t bits_per_sample;
   int32_t duration;
+  int32_t skip_offset;
   
   int32_t resample_rate;
   size_t resample_counter;
