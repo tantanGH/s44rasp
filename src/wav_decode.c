@@ -20,6 +20,7 @@ int32_t wav_decode_open(WAV_DECODE_HANDLE* wav, int16_t up_sampling) {
   wav->block_align = -1;
   wav->bits_per_sample = -1;
   wav->duration = -1;
+  wav->skip_offset = 0;
 
   rc = 0;
 
@@ -185,7 +186,8 @@ int32_t wav_decode_parse_header(WAV_DECODE_HANDLE* wav, FILE* fp) {
   wav->duration = ((uint8_t)buf[0] + ((uint8_t)buf[1]<<8) + ((uint8_t)buf[2]<<16) + ((uint8_t)buf[3]<<24)) / wav->block_align;
 //  printf("sub chunk 2 size ok. %d\n", bytes_read);
 
-  rc = (int32_t)bytes_read;
+  wav->skip_offset = (int32_t)bytes_read;
+  rc = 0;
 
 exit:
   return rc;

@@ -6,20 +6,17 @@
 //
 //  init macs decoder handle
 //
-int32_t macs_decode_open(MACS_DECODE_HANDLE* wav, int16_t up_sampling) {
+int32_t macs_decode_open(MACS_DECODE_HANDLE* macs, int16_t up_sampling) {
 
   int32_t rc = -1;
 
-  wav->up_sampling = up_sampling;
-  wav->resample_rate = 48000;
-  wav->resample_counter = 0;
+  macs->up_sampling = up_sampling;
+  macs->resample_rate = 48000;
+  macs->resample_counter = 0;
 
-  wav->sample_rate = -1;
-  wav->channels = -1;
-  wav->byte_rate = -1;
-  wav->block_align = -1;
-  wav->bits_per_sample = -1;
-  wav->duration = -1;
+  macs->sample_rate = -1;
+  macs->channels = -1;
+  macs->duration = -1;
 
   rc = 0;
 
@@ -30,162 +27,64 @@ int32_t macs_decode_open(MACS_DECODE_HANDLE* wav, int16_t up_sampling) {
 //
 //  close decoder handle
 //
-void macs_decode_close(MACS_DECODE_HANDLE* wav) {
+void macs_decode_close(MACS_DECODE_HANDLE* macs) {
 
 }
 
 //
 //  parse macs header
 //
-int32_t macs_decode_parse_header(MACS_DECODE_HANDLE* wav, FILE* fp) {
+int32_t macs_decode_parse_header(MACS_DECODE_HANDLE* macs, FILE* fp) {
 
   int32_t rc = -1;
-  size_t bytes_read = 0;
 
-  // ChunkID
-  char buf[5];
-  bytes_read += fread(buf, sizeof(uint8_t), 4, fp);
-  buf[4] = '\0';
-  if (strcmp(buf, "RIFF") != 0) {
-    printf("error: incorrect wav format.\n");
+  // eye catch
+  uint8_t buf[512];
+  size_t bytes_read = fread(buf, sizeof(uint8_t), 512, fp);
+  if (memcmp(buf + 0, "MACSDATA", 8) != 0) {
+    printf("error: not MACS data.\n");
     goto exit;
   }
-//  printf("chunkID ok. %d\n", bytes_read);
-
-  // ChunkSize
-  bytes_read += fread(buf, sizeof(uint8_t), 4, fp);
-//  printf("chunk size ok. %d\n", bytes_read);
-
-  // Format
-  bytes_read += fread(buf, sizeof(uint8_t), 4, fp);
-  buf[4] = '\0';
-  if (strcmp(buf, "WAVE") != 0) {
-    printf("error: incorrect wav format.\n");
+  if (buf[ 0x0e ] != 0x00 || buf[ 0x0f ] != 0x01) {
+    printf("error: unsupported MACS format.\n");
     goto exit;
   }
-//  printf("format ok. %d\n", bytes_read);
 
-  // Subchunk1ID
-  bytes_read += fread(buf, sizeof(uint8_t), 4, fp);
-  buf[4] = '\0';
-//  printf("sub chunk1 ID ok. %d\n", bytes_read);
-
-  // check if we have a JUNK Chunk
-  if (strcmp(buf, "JUNK") == 0) {
-    size_t bytes_junk = fread(buf, sizeof(uint8_t), 4, fp);
-    buf[4] = '\0';
-    bytes_junk += (uint8_t)buf[0] + ((uint8_t)buf[1] << 8) + ((uint8_t)buf[2] << 16) + ((uint8_t)buf[3] << 24);
-   if (fseek(fp, bytes_read + bytes_junk, SEEK_SET) != 0) {
-      printf("error: wav seek error.\n");
-      goto exit;
+  size_t read_ofs = 0x10;
+  while (read_ofs < bytes_read - 20) {
+    if (buf[ read_ofs +  0 ] == 0x00 && buf[ read_ofs +  1 ] == 0x18 &&
+        buf[ read_ofs + 10 ] == 0x00 && buf[ read_ofs + 11 ] == 0x00 &&
+        buf[ read_ofs + 12 ] == 0x00 && buf[ read_ofs + 13 ] == 0x08 &&
+        buf[ read_ofs + 15 ] == 0x03 &&
+        buf[ read_ofs + 16 ] == 0x00 && buf[ read_ofs + 17 ] == 0x00 &&
+        buf[ read_ofs + 18 ] == 0x00 && buf[ read_ofs + 19 ] == 0x00) {
+      if (buf[ read_ofs + 14 ] == 0x1a) {
+        macs->sample_rate = 22050;
+        macs->channels = 2;
+      } else if (buf[ read_ofs + 14 ] == 0x1d) {
+        macs->sample_rate = 44100;
+        macs->channels = 2;
+      } else if (buf[ read_ofs + 14 ] == 0x1e) {
+        macs->sample_rate = 48000;
+        macs->channels = 2;
+      } else {
+        printf("error: unsupported MACS audio format.\n");
+        goto exit;
+      }
+      macs->skip_offset = buf[ read_ofs + 2 ] * 256 * 256 * 256 +
+                          buf[ read_ofs + 3 ] * 256 * 256 +
+                          buf[ read_ofs + 4 ] * 256 +
+                          buf[ read_ofs + 5 ] + 0x0e;
+      macs->total_bytes = buf[ read_ofs + 6 ] * 256 * 256 * 256 +
+                          buf[ read_ofs + 7 ] * 256 * 256 +
+                          buf[ read_ofs + 8 ] * 256 +
+                          buf[ read_ofs + 9 ];
+      macs->duration = macs->sample_rate * macs->channels * sizeof(int16_t);
+      rc = 0;
+      break;
     }
-    bytes_read += bytes_junk;
-//    bytes_expected += bytes_junk + 4;
-    // now really read the fmt chunk
-    bytes_read += fread(buf, sizeof(uint8_t), 4, fp);
-    buf[4] = '\0';
   }
-//  printf("junk ok. %d\n", bytes_read);
 
-  // get the fmt chunk
-  if (strcmp(buf, "fmt ") != 0) {
-    printf("error: wav fmt chunk read error.\n");
-    goto exit;
-  }
-//  printf("fmt ok. %d\n", bytes_read);
-
-  // Subchunk1Size
-  bytes_read += fread(buf, sizeof(uint8_t), 4, fp);
-  int16_t format = buf[0];
-  if (format != 16 && format != 18) {
-    printf("error: wav unknown format (%d).\n", format);
-    goto exit;
-  }
-  if (buf[1] != 0 || buf[2] != 0 || buf[3] != 0) {
-    printf("error: wav Subchunk1Size error.\n");
-    goto exit;
-  }
-//  printf("sub chunk1 size ok. %d\n", bytes_read);
-
-  // AudioFormat
-  bytes_read += fread(buf, sizeof(uint8_t), 2, fp);
-  if (buf[0] != 1 || buf[1] != 0) {
-    printf("error: wav AudioFormat error.\n");
-    goto exit;
-  }
-//  printf("audio fmt ok. %d\n", bytes_read);
-
-  // NumChannels
-  bytes_read += fread(buf, sizeof(uint8_t), 2, fp);
-  wav->channels = (uint8_t)buf[0] + ((uint8_t)buf[1] << 8);
-  if (wav->channels != 1 && wav->channels != 2) {
-    printf("error: wav unsupported channels (%d).\n", wav->channels);
-    goto exit;
-  }
-//  printf("num channels ok. %d\n", bytes_read);
-
-  // SampleRate
-  bytes_read += fread(buf, sizeof(uint8_t), 4, fp);
-  wav->sample_rate = (uint8_t)buf[0] + ((uint8_t)buf[1] << 8) + ((uint8_t)buf[2] << 16) + ((uint8_t)buf[3] << 24);
-  if (wav->sample_rate != 32000 && wav->sample_rate != 44100 && wav->sample_rate != 48000) {
-    printf("error: wav unsupported sample rate (%d).\n", wav->sample_rate);
-    goto exit;
-  }
-//  printf("sample rate ok. %d\n", bytes_read);
-
-  // ByteRate
-  bytes_read += fread(buf, sizeof(uint8_t), 4, fp);
-  wav->byte_rate = (uint8_t)buf[0] + ((uint8_t)buf[1] <<8) + ((uint8_t)buf[2] << 16) + ((uint8_t)buf[3] << 24);
-//  printf("byte rate ok. %d\n", bytes_read);
-
-  // BlockAlign
-  bytes_read += fread(buf, sizeof(uint8_t), 2, fp);
-  wav->block_align = (uint8_t)buf[0] + ((uint8_t)buf[1] << 8);
-//  printf("block align ok. %d\n", bytes_read);
-
-  // BitsPerSample
-  bytes_read += fread(buf, sizeof(uint8_t), 2, fp);
-  wav->bits_per_sample = (uint8_t)buf[0] + ((uint8_t)buf[1] << 8);
-  if (wav->bits_per_sample != 16) {
-    printf("error: wav unsupported bit per sample (%d).\n", wav->bits_per_sample);
-    goto exit;
-  }
-//  printf("bit per sample ok. %d\n", bytes_read);
-
-  // skip 2 bytes if format is 18
-  if (format == 18) {
-    bytes_read += fread(buf, sizeof(uint8_t), 2, fp);
-  }
-//  printf("format 18 ok. %d\n", bytes_read);
-
-  // Subchunk2ID
-  bytes_read += fread(buf, sizeof(uint8_t), 4, fp);
-  buf[4] = '\0';
-  while (strcmp(buf, "data") != 0) {
-    if (feof(fp) || ferror(fp)) {
-      printf("error: wav Shubchunk2 read error.\n");
-      goto exit;
-    }
-    size_t bytes_junk = fread(buf, sizeof(uint8_t), 4, fp);
-    buf[4] = '\0';
-    bytes_junk += (uint8_t)buf[0] + ((uint8_t)buf[1] << 8) + ((uint8_t)buf[2] << 16) + ((uint8_t)buf[3] << 24);
-    if (fseek(fp, bytes_read + bytes_junk, SEEK_SET) != 0) {
-      printf("error: wav seek error.\n");
-      goto exit;
-    }
-    bytes_read += bytes_junk;
-    //bytes_expected += bytes_junk+ 4;
-    bytes_read += fread(buf, sizeof(uint8_t), 4, fp);
-    buf[4] = '\0';
-  }
-//  printf("sub chunk2 id ok. %d\n", bytes_read);
-
-  // Subchunk2Size
-  bytes_read += fread(buf, sizeof(uint8_t), 4, fp);
-  wav->duration = ((uint8_t)buf[0] + ((uint8_t)buf[1]<<8) + ((uint8_t)buf[2]<<16) + ((uint8_t)buf[3]<<24)) / wav->block_align;
-//  printf("sub chunk 2 size ok. %d\n", bytes_read);
-
-  rc = (int32_t)bytes_read;
 
 exit:
   return rc;
@@ -194,49 +93,56 @@ exit:
 //
 //  decode
 //
-size_t macs_decode_exec(MACS_DECODE_HANDLE* wav, int16_t* output_buffer, int16_t* source_buffer, size_t source_buffer_len) {
+size_t macs_decode_exec(MACS_DECODE_HANDLE* macs, int16_t* output_buffer, int16_t* source_buffer, size_t source_buffer_len) {
 
+  uint8_t* source_buffer_uint8 = (uint8_t*)source_buffer;
+  uint8_t* output_buffer_uint8 = (uint8_t*)output_buffer;
   size_t source_buffer_ofs = 0;
   size_t output_buffer_ofs = 0;
   size_t output_buffer_len = 0;
 
-  if (wav->sample_rate <= 32000 || wav->up_sampling) {
+  if (macs->sample_rate < 44100 || macs->up_sampling) {
 
-    if (wav->channels == 1) {
+    if (macs->channels == 1) {
 
-      // mono to stereo duplication
-      while (source_buffer_ofs < source_buffer_len) {
+      // mono to stereo duplication with endian conversion
+      while (source_buffer_ofs < source_buffer_len * 2) {
 
-        output_buffer[ output_buffer_ofs ++ ] = source_buffer[ source_buffer_ofs ];
-        output_buffer[ output_buffer_ofs ++ ] = source_buffer[ source_buffer_ofs ];
+        output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs + 1 ];
+        output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs + 0 ];
+        output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs + 1 ];
+        output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs + 0 ];
 
         // up sampling
-        wav->resample_counter += wav->sample_rate;
-        if (wav->resample_counter < wav->resample_rate) {
+        macs->resample_counter += macs->sample_rate;
+        if (macs->resample_counter < macs->resample_rate) {
           // do not increment
         } else {
-          source_buffer_ofs ++;
-          wav->resample_counter -= wav->resample_rate;
+          source_buffer_ofs += 2;
+          macs->resample_counter -= macs->resample_rate;
         }
 
       }
 
-      output_buffer_len = output_buffer_ofs;
+      output_buffer_len = output_buffer_ofs / 2;
 
     } else {
 
-      while (source_buffer_ofs < source_buffer_len) {
+      // endian converion
+      while (source_buffer_ofs < source_buffer_len * 2) {
 
-        output_buffer[ output_buffer_ofs ++ ] = source_buffer[ source_buffer_ofs + 0 ];
-        output_buffer[ output_buffer_ofs ++ ] = source_buffer[ source_buffer_ofs + 1 ];
+        output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs + 1 ];
+        output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs + 0 ];
+        output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs + 3 ];
+        output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs + 2 ];
 
         // up sampling
-        wav->resample_counter += wav->sample_rate;
-        if (wav->resample_counter < wav->resample_rate) {
+        macs->resample_counter += macs->sample_rate;
+        if (macs->resample_counter < macs->resample_rate) {
           // do not increment
         } else {
-          source_buffer_ofs += 2;
-          wav->resample_counter -= wav->resample_rate;
+          source_buffer_ofs += 4;
+          macs->resample_counter -= macs->resample_rate;
         }
 
       }
@@ -247,21 +153,31 @@ size_t macs_decode_exec(MACS_DECODE_HANDLE* wav, int16_t* output_buffer, int16_t
 
   } else {
 
-    if (wav->channels == 1) {
+    if (macs->channels == 1) {
 
-      // mono to stereo duplication
-      while (source_buffer_ofs < source_buffer_len) {
-        output_buffer[ output_buffer_ofs++ ] = source_buffer[ source_buffer_ofs ];
-        output_buffer[ output_buffer_ofs++ ] = source_buffer[ source_buffer_ofs ];
-        source_buffer_ofs++;
+      // mono to stereo duplication with endian conversion
+      while (source_buffer_ofs < source_buffer_len * 2) {
+        output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs + 1 ];
+        output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs + 0 ];
+        output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs + 1 ];
+        output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs + 0 ];
+        source_buffer_ofs += 2;
       }
 
-      output_buffer_len = output_buffer_ofs;
+      output_buffer_len = output_buffer_ofs / 2;
 
     } else {
 
-      memcpy(output_buffer, source_buffer, source_buffer_len * sizeof(int16_t));
-      output_buffer_len = source_buffer_len;
+      // endian converion
+      while (source_buffer_ofs < source_buffer_len * 2) {
+        output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs + 1 ];
+        output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs + 0 ];
+        output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs + 3 ];
+        output_buffer_uint8[ output_buffer_ofs ++ ] = source_buffer_uint8[ source_buffer_ofs + 2 ];
+        source_buffer_ofs += 4;
+      }
+
+      output_buffer_len = output_buffer_ofs / 2;
 
     }
 
@@ -269,3 +185,4 @@ size_t macs_decode_exec(MACS_DECODE_HANDLE* wav, int16_t* output_buffer, int16_t
 
   return output_buffer_len;
 }
+
