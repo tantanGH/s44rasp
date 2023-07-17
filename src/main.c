@@ -36,7 +36,7 @@ static void sigint_handler(int signal) {
 //  show help message
 //
 static void show_help_message() {
-  printf("usage: s44rasp [options] <input-file(.pcm|.sXX|.mXX|.aXX|.nXX|.wav|.mcs)>\n");
+  printf("usage: s44rasp [options] <input-file.(pcm|sXX|mXX|aXX|nXX|wav|mcs)>\n");
   printf("options:\n");
   printf("     -d hw:x,y ... ALSA PCM device name (i.e. hw:3,0)\n");
   printf("     -o        ... enable OLED(SSD1306) display\n");
