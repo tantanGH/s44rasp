@@ -41,7 +41,8 @@ static void show_help_message() {
   printf("     -d hw:x,y ... ALSA PCM device name (i.e. hw:3,0)\n");
   printf("     -o        ... enable OLED(SSD1306) display\n");
   printf("     -u        ... upsample to 48kHz (default for 15.6kHz/24kHz/32kHz source)\n");
-  printf("     -f        ... check supported ALSA format\n");
+  printf("     -f        ... (not for play) check supported ALSA format\n");
+  printf("     -l        ... (not for play) check peak/average level\n");
   printf("     -h        ... show help message\n");
 }
 
@@ -65,6 +66,7 @@ int32_t main(int32_t argc, char* argv[]) {
   char* pcm_device_name = NULL;
   int16_t up_sampling = 0;          // 0:no upsampling, 1:to 48kHz, 2:to 44.1kHz
   int16_t pcm_format_check = 0;
+  int16_t pcm_level_check = 0;
 
   // input file handle
   FILE* fp = NULL;
@@ -81,7 +83,7 @@ int32_t main(int32_t argc, char* argv[]) {
   OLED_SSD1306 ssd1306 = { 0 };
 
   // credit
-  printf("s44rasp - X68k ADPCM/PCM/WAV player for Raspberry Pi version " PROGRAM_VERSION " by tantan\n");
+  printf("s44rasp - X68k ADPCM/PCM/WAV/MCS player for Raspberry Pi version " PROGRAM_VERSION " by tantan\n");
 
   // command line
   for (int16_t i = 1; i < argc; i++) {
@@ -94,6 +96,8 @@ int32_t main(int32_t argc, char* argv[]) {
         i++;
       } else if (argv[i][1] == 'f') {
         pcm_format_check = 1;
+      } else if (argv[i][1] == 'l') {
+        pcm_level_check = 1;
       } else if (argv[i][1] == 'o') {
         use_oled = 1;
       } else if (argv[i][1] == 'u') {
@@ -431,6 +435,67 @@ int32_t main(int32_t argc, char* argv[]) {
   fread_buffer = malloc(input_format == FORMAT_ADPCM  ? sizeof(uint8_t) * fread_buffer_len :
                         input_format == FORMAT_YM2608 ? sizeof(uint8_t) * fread_buffer_len : 
                                                         sizeof(int16_t) * fread_buffer_len);
+
+  // level check mode
+  if (pcm_level_check) {
+
+    int16_t peak_level = 0;
+    double total_level = 0.0;
+    size_t num_samples = 0;
+
+    if (input_format == FORMAT_ADPCM || input_format == FORMAT_YM2608) {
+
+      size_t fread_len = 0;
+
+      do {
+        size_t len = fread(fread_buffer, sizeof(uint8_t), fread_buffer_len, fp);
+        if (len == 0) break;
+        fread_len += len;
+        size_t decode_len = 0;
+        if (input_format == FORMAT_ADPCM) {
+          decode_len = adpcm_decode_exec(&adpcm_decoder, pcm_buffer, fread_buffer, len);
+        } else if (input_format == FORMAT_YM2608) {
+          decode_len = ym2608_decode_exec(&ym2608_decoder, pcm_buffer, fread_buffer, len);
+        }
+        for (size_t i = 0; i < decode_len / 2; i++) {
+          int16_t v = abs(pcm_buffer[i]);
+          if (v > peak_level) peak_level = v;
+          total_level += (double)v;
+        }
+        num_samples += decode_len / 2;
+      } while (fread_len < pcm_data_size && abort_flag == 0);
+
+    } else {
+
+      size_t fread_len = 0;
+
+      do {
+        size_t remain = pcm_data_size / 2 - fread_len;
+        size_t len = fread(fread_buffer, sizeof(int16_t), remain < fread_buffer_len ? remain : fread_buffer_len, fp);
+        if (len == 0) break;
+        fread_len += len;
+        size_t decode_len = 0;
+        if (input_format == FORMAT_RAW) {
+          decode_len = raw_decode_exec(&raw_decoder, pcm_buffer, fread_buffer, len);
+        } else if (input_format == FORMAT_WAV) {
+          decode_len = wav_decode_exec(&wav_decoder, pcm_buffer, fread_buffer, len);
+        } else if (input_format == FORMAT_MACS) {
+          decode_len = macs_decode_exec(&macs_decoder, pcm_buffer, fread_buffer, len);
+        }
+        for (size_t i = 0; i < decode_len / 2; i++) {
+          int16_t v = abs(pcm_buffer[i]);
+          if (v > peak_level) peak_level = v;
+          total_level += (double)v;
+        }
+        num_samples += decode_len / 2;
+      } while (fread_len * sizeof(int16_t) < pcm_data_size && abort_flag == 0);
+    }
+
+    printf("Average Level ... %4.2f%%\n", 100.0 * total_level / num_samples / 32767.0);
+    printf("Peak Level    ... %4.2f%%\n", peak_level / 32767.0);
+
+    goto exit;
+  }
 
   // allocate ALSA pcm buffer
   size_t pcm_buffer_len = 2 * ((pcm_freq < 44100 || up_sampling) ? 48000 * 2 : pcm_freq ) * 1;  // 1 sec (adpcm=2sec)
