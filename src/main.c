@@ -120,9 +120,12 @@ int32_t main(int32_t argc, char* argv[]) {
 
   // check available ALSA formats for this device
   if (pcm_format_check) {
+
+    printf("PCM device name: %s\n", pcm_device_name != NULL ? pcm_device_name : "default");
+
     snd_pcm_hw_params_t* params;
     snd_pcm_format_mask_t* format_mask;
-    snd_pcm_open(&pcm_handle, pcm_device_name == NULL ? "default" : pcm_device_name, SND_PCM_STREAM_PLAYBACK, 0);
+    snd_pcm_open(&pcm_handle, pcm_device_name != NULL ? pcm_device_name : "default", SND_PCM_STREAM_PLAYBACK, 0);
     
     // Allocate and initialize the hardware parameters
     snd_pcm_hw_params_malloc(&params);
