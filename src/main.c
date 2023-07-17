@@ -499,7 +499,7 @@ int32_t main(int32_t argc, char* argv[]) {
     }
 
     printf("Average Level ... %4.2f%%\n", 100.0 * total_level / num_samples / 32767.0);
-    printf("Peak Level    ... %4.2f%%\n", peak_level / 32767.0);
+    printf("Peak Level    ... %4.2f%%\n", 100.0 * peak_level / 32767.0);
 
     goto exit;
   }
