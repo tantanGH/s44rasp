@@ -91,9 +91,9 @@ int32_t main(int32_t argc, char* argv[]) {
       if (argv[i][1] == 'd' && i+1 < argc) {
         pcm_device_name = argv[ i + 1 ];
         i++;
-      } else if (argv[i][1] == 'l' && i+1 < argc) {
-        alsa_latency = atoi(argv[ i + 1 ]);
-        i++;
+//      } else if (argv[i][1] == 'l' && i+1 < argc) {
+//        alsa_latency = atoi(argv[ i + 1 ]);
+//        i++;
       } else if (argv[i][1] == 'f') {
         pcm_format_check = 1;
       } else if (argv[i][1] == 'l') {
