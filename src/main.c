@@ -439,6 +439,10 @@ int32_t main(int32_t argc, char* argv[]) {
                         input_format == FORMAT_YM2608 ? sizeof(uint8_t) * fread_buffer_len : 
                                                         sizeof(int16_t) * fread_buffer_len);
 
+  // allocate ALSA pcm buffer
+  size_t pcm_buffer_len = 2 * ((pcm_freq < 44100 || up_sampling) ? 48000 * 2 : pcm_freq ) * 1;  // 1 sec (adpcm=2sec)
+  pcm_buffer = (int16_t*)malloc(sizeof(int16_t) * pcm_buffer_len);            // 16/24bit & stereo ... fixed
+
   // level check mode
   if (pcm_level_check) {
 
@@ -499,10 +503,6 @@ int32_t main(int32_t argc, char* argv[]) {
 
     goto exit;
   }
-
-  // allocate ALSA pcm buffer
-  size_t pcm_buffer_len = 2 * ((pcm_freq < 44100 || up_sampling) ? 48000 * 2 : pcm_freq ) * 1;  // 1 sec (adpcm=2sec)
-  pcm_buffer = (int16_t*)malloc(sizeof(int16_t) * pcm_buffer_len);            // 16/24bit & stereo ... fixed
 
   // init ALSA device
   if ((alsa_rc = snd_pcm_open(&pcm_handle, pcm_device_name != NULL ? pcm_device_name : "default", 
