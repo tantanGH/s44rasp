@@ -67,6 +67,7 @@ int32_t main(int32_t argc, char* argv[]) {
   int16_t up_sampling = 0;          // 0:no upsampling, 1:to 48kHz, 2:to 44.1kHz
   int16_t pcm_format_check = 0;
   int16_t pcm_level_check = 0;
+  int16_t quieet_mode = 0;
 
   // input file handle
   FILE* fp = NULL;
@@ -102,6 +103,8 @@ int32_t main(int32_t argc, char* argv[]) {
         use_oled = 1;
       } else if (argv[i][1] == 'u') {
         up_sampling = 1;
+      } else if (argv[i][1] == 'q') {
+        quiet_mode = 1;
       } else if (argv[i][1] == 'h') {
         show_help_message();
         goto exit;
@@ -559,8 +562,10 @@ int32_t main(int32_t argc, char* argv[]) {
         oled_ssd1306_show_meter(&ssd1306, 12, 6, peak_l, 0);
         oled_ssd1306_show_meter(&ssd1306, 12, 7, peak_r, 0);
       }
-      printf("\r%d/%d (%4.2f%%)", fread_len, pcm_data_size, fread_len * 100.0 / pcm_data_size);
-      fflush(stdout);
+      if (!quiet_mode) {
+        printf("\r%d/%d (%4.2f%%)", fread_len, pcm_data_size, fread_len * 100.0 / pcm_data_size);
+        fflush(stdout);
+      }
     } while (fread_len < pcm_data_size && abort_flag == 0);
 
   } else {
@@ -600,8 +605,10 @@ int32_t main(int32_t argc, char* argv[]) {
         oled_ssd1306_show_meter(&ssd1306, 12, 6, peak_l, 0);
         oled_ssd1306_show_meter(&ssd1306, 12, 7, peak_r, 0);
       }
-      printf("\r%d/%d (%4.2f%%)", fread_len * sizeof(int16_t), pcm_data_size, fread_len * sizeof(int16_t) * 100.0 / pcm_data_size);
-      fflush(stdout);
+      if (!quiet_mode) {
+        printf("\r%d/%d (%4.2f%%)", fread_len * sizeof(int16_t), pcm_data_size, fread_len * sizeof(int16_t) * 100.0 / pcm_data_size);
+        fflush(stdout);
+      }
     } while (fread_len * sizeof(int16_t) < pcm_data_size && abort_flag == 0);
   }
 
