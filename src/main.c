@@ -67,7 +67,7 @@ int32_t main(int32_t argc, char* argv[]) {
   int16_t up_sampling = 0;          // 0:no upsampling, 1:to 48kHz, 2:to 44.1kHz
   int16_t pcm_format_check = 0;
   int16_t pcm_level_check = 0;
-  int16_t quieet_mode = 0;
+  int16_t quiet_mode = 0;
 
   // input file handle
   FILE* fp = NULL;
