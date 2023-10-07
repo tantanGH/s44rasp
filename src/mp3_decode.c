@@ -43,7 +43,7 @@ static inline int16_t scale_12bit(mad_fixed_t sample) {
 int32_t mp3_decode_open(MP3_DECODE_HANDLE* decode, int16_t up_sampling) {
 
   // baseline
-  deocde->up_sampline = up_sampling;
+  decode->up_sampline = up_sampling;
   decode->mp3_data = NULL;
   decode->mp3_data_len = 0;
   decode->mp3_quality = 0;
@@ -80,13 +80,13 @@ void mp3_decode_close(MP3_DECODE_HANDLE* decode) {
   mad_stream_finish(&(decode->mad_stream));
 
   if (decode->mp3_title != NULL) {
-    himem_free(decode->mp3_title, 0);
+    free(decode->mp3_title);
   }
   if (decode->mp3_artist != NULL) {
-    himem_free(decode->mp3_artist, 0);
+    free(decode->mp3_artist);
   }
   if (decode->mp3_album != NULL) {
-    himem_free(decode->mp3_album, 0);
+    free(decode->mp3_album);
   }
 
 }
@@ -170,7 +170,7 @@ int32_t mp3_decode_parse_tags(MP3_DECODE_HANDLE* decode, FILE* fp) {
       if (frame_data[0] == 0x00) {              // ISO-8859-1
         decode->mp3_artist = frame_data + 1;
       } else if (frame_data[0] == 0x01) {       // UTF-16 with BOM
-        decode->mp3_artist = himem_malloc(frame_size - 3 + 1, 0);
+        decode->mp3_artist = malloc(frame_size - 3 + 1);
         decode->mp3_artist[0] = '\0';
         convert_utf16_to_cp932(decode->mp3_artist, frame_data + 1, frame_size - 1);
       }
@@ -185,7 +185,7 @@ int32_t mp3_decode_parse_tags(MP3_DECODE_HANDLE* decode, FILE* fp) {
       if (frame_data[0] == 0x00) {              // ISO-8859-1
         decode->mp3_album = frame_data + 1;
       } else if (frame_data[0] == 0x01) {       // UTF-16 with BOM
-        decode->mp3_album = himem_malloc(frame_size - 3 + 1, 0);
+        decode->mp3_album = malloc(frame_size - 3 + 1);
         decode->mp3_album[0] = '\0';
         convert_utf16_to_cp932(decode->mp3_album, frame_data + 1, frame_size - 1);
       }
@@ -220,7 +220,6 @@ int32_t mp3_decode_setup(MP3_DECODE_HANDLE* decode, void* mp3_data, size_t mp3_d
 
   // mad frame options
   decode->mp3_frame_options = 
-    decode->mp3_quality == 2 ? MAD_OPTION_QUARTERSAMPLERATE | MAD_OPTION_IGNORECRC :
     decode->mp3_quality == 1 ? MAD_OPTION_HALFSAMPLERATE    | MAD_OPTION_IGNORECRC : 0;
 
   mad_stream_init(&(decode->mad_stream));
