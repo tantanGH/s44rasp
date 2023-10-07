@@ -578,9 +578,9 @@ int32_t main(int32_t argc, char* argv[]) {
 
   if (input_format == FORMAT_MP3) {
 
-    for (;;) {
+    size_t total_decode_bytes = 0;
 
-      size_t total_decode_bytes = 0;
+    for (;;) {
 
       size_t decode_len = mp3_decode_exec(&mp3_decoder, pcm_buffer, sizeof(int16_t) * pcm_buffer_len);
       if (decode_len == 0) break;
