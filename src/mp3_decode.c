@@ -95,7 +95,7 @@ void mp3_decode_close(MP3_DECODE_HANDLE* decode) {
 //
 //  parse ID3v2 tags
 //
-int32_t mp3_decode_parse_tags(MP3_DECODE_HANDLE* decode, FILE* fp) {
+int32_t mp3_decode_parse_header(MP3_DECODE_HANDLE* decode, FILE* fp) {
 
   // read the first 10 bytes of the MP3 file
   uint8_t mp3_header[10];

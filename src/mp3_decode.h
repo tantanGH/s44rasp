@@ -42,7 +42,7 @@ typedef struct {
 
 int32_t mp3_decode_open(MP3_DECODE_HANDLE* decode, int16_t up_sampling);
 void mp3_decode_close(MP3_DECODE_HANDLE* decode);
-int32_t mp3_decode_parse_tags(MP3_DECODE_HANDLE* decode, FILE* fp);
+int32_t mp3_decode_parse_header(MP3_DECODE_HANDLE* decode, FILE* fp);
 int32_t mp3_decode_setup(MP3_DECODE_HANDLE* decode, void* mp3_data, size_t mp3_data_len, int16_t mp3_quality);
 size_t mp3_decode_exec(MP3_DECODE_HANDLE* decode, int16_t* output_buffer, size_t output_buffer_bytes);
 

@@ -12,6 +12,7 @@
 #include "raw_decode.h"
 #include "wav_decode.h"
 #include "ym2608_decode.h"
+#include "mp3_decode.h"
 #include "macs_decode.h"
 
 // oled
@@ -36,7 +37,7 @@ static void sigint_handler(int signal) {
 //  show help message
 //
 static void show_help_message() {
-  printf("usage: s44rasp [options] <input-file.(pcm|sXX|mXX|aXX|nXX|wav|mcs)>\n");
+  printf("usage: s44rasp [options] <input-file.(pcm|sXX|mXX|aXX|nXX|wav|mp3|mcs)>\n");
   printf("options:\n");
   printf("     -d hw:x,y ... ALSA PCM device name (i.e. hw:3,0)\n");
   printf("     -o        ... enable OLED(SSD1306) display\n");
@@ -77,6 +78,7 @@ int32_t main(int32_t argc, char* argv[]) {
   RAW_DECODE_HANDLE raw_decoder = { 0 };
   WAV_DECODE_HANDLE wav_decoder = { 0 };
   YM2608_DECODE_HANDLE ym2608_decoder = { 0 };
+  MP3_DECODE_HANDLE mp3_decoder = { 0 };
   MACS_DECODE_HANDLE macs_decoder = { 0 };
 
   // oled
@@ -84,7 +86,7 @@ int32_t main(int32_t argc, char* argv[]) {
   OLED_SSD1306 ssd1306 = { 0 };
 
   // credit
-  printf("s44rasp - X68k ADPCM/PCM/WAV/MP3/MCS player version " PROGRAM_VERSION " by tantan\n");
+  printf("s44rasp - ADPCM/S44/A44/WAV/MP3/MCS player version " PROGRAM_VERSION " by tantan\n");
 
   // command line
   for (int16_t i = 1; i < argc; i++) {
@@ -252,6 +254,10 @@ int32_t main(int32_t argc, char* argv[]) {
     input_format = FORMAT_WAV;
     pcm_freq = -1;        // not yet determined
     pcm_channels = -1;    // not yet determined
+  } else if (stricmp(".mp3", pcm_file_exp) == 0) {
+    input_format = FORMAT_MP3;
+    pcm_freq = -1;        // not yet determined
+    pcm_channels = -1;    // not yet determined
   } else if (stricmp(".mcs", pcm_file_exp) == 0) {
     input_format = FORMAT_MACS;
     pcm_freq = -1;        // not yet determined
@@ -293,6 +299,14 @@ int32_t main(int32_t argc, char* argv[]) {
     }
   }
 
+  // init mp3 decoder if needed
+  if (input_format == FORMAT_MP3) {
+    if (mp3_decode_open(&mp3_decoder, up_sampling) != 0) {
+      printf("error: MP3 decoder initialization error.\n");
+      goto exit;
+    }
+  }
+
   // init macs decoder if needed
   if (input_format == FORMAT_MACS) {
     if (macs_decode_open(&macs_decoder, up_sampling) != 0) {
@@ -321,7 +335,7 @@ int32_t main(int32_t argc, char* argv[]) {
   size_t pcm_data_size = ftell(fp);
   fseek(fp, 0, SEEK_SET);
 
-  // read header part of WAV/MCS file
+  // read header part of WAV/MP3/MCS file
   size_t skip_offset = 0;
   if (input_format == FORMAT_WAV) {
     if (wav_decode_parse_header(&wav_decoder, fp) < 0) {
@@ -332,6 +346,17 @@ int32_t main(int32_t argc, char* argv[]) {
     pcm_channels = wav_decoder.channels;
     skip_offset = wav_decoder.skip_offset;
     pcm_data_size -= skip_offset;             // overwrite
+  } else if (input_format == FORMAT_MP3) {
+    if (mp3_decode_parse_header(&mp3_decoder, fp) < 0) {
+      printf("error: mp3 header parse error.\n");
+      goto exit;
+    }
+//    pcm_freq = mp3_decoder.sample_rate;     // not yet
+//    pcm_channels = mp3_decoder.channels;    // not yet
+    pcm_freq = 48000;   // tentative
+    pcm_channels = 2;   // tentative
+    skip_offset = mp3_decoder.skip_offset;
+    pcm_data_size -= skip_offset;             // overwrite      
   } else if (input_format == FORMAT_MACS) {
     if (macs_decode_parse_header(&macs_decoder, fp) < 0) {
       printf("error: macs header parse error.\n");
@@ -423,6 +448,9 @@ int32_t main(int32_t argc, char* argv[]) {
     printf("PCM channels  : %s\n", pcm_channels == 1 ? "mono" : "stereo");
     printf("PCM length    : %4.2f [sec]\n", (float)pcm_data_size / pcm_channels / pcm_1sec_size);
   }
+
+  // describe mp3 format
+  //  no support
 
   // describe macs format
   if (input_format == FORMAT_MACS) {
