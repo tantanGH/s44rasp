@@ -284,15 +284,15 @@ size_t mp3_decode_exec(MP3_DECODE_HANDLE* decode, int16_t* output_buffer, size_t
 
       for (int32_t i = 0; i < pcm->length; i++) {
         // stereo data
-        decode_buffer[ decode_ofs++ ] = scale_16bit(pcm->samples[0][i]);
-        decode_buffer[ decode_ofs++ ] = scale_16bit(pcm->samples[1][i]);
+        output_buffer[ decode_ofs++ ] = scale_16bit(pcm->samples[0][i]);
+        output_buffer[ decode_ofs++ ] = scale_16bit(pcm->samples[1][i]);
       }
 
     } else {
 
       for (int32_t i = 0; i < pcm->length; i++) {
         // mono data
-        decode_buffer[ decode_ofs++ ] = scale_16bit(pcm->samples[0][i]);
+        output_buffer[ decode_ofs++ ] = scale_16bit(pcm->samples[0][i]);
       }
 
     }
