@@ -580,9 +580,13 @@ int32_t main(int32_t argc, char* argv[]) {
 
     for (;;) {
 
+      size_t total_decode_bytes = 0;
+
       size_t decode_len = mp3_decode_exec(&mp3_decoder, pcm_buffer, sizeof(int16_t) * pcm_buffer_len);
       if (decode_len == 0) break;
-      
+
+      total_decode_bytes += decode_len * sizeof(int16_t);
+
       if ((alsa_rc = snd_pcm_writei(pcm_handle, (const void*)pcm_buffer, decode_len / 2)) < 0) {    
         if (snd_pcm_recover(pcm_handle, alsa_rc, 0) < 0) {
           printf("error: fatal pcm data write error.\n");
@@ -603,7 +607,10 @@ int32_t main(int32_t argc, char* argv[]) {
         oled_ssd1306_show_meter(&ssd1306, 12, 6, peak_l, 0);
         oled_ssd1306_show_meter(&ssd1306, 12, 7, peak_r, 0);
       }
-
+      if (!quiet_mode) {
+        printf("\r%d bytes", total_decode_bytes);
+        fflush(stdout);
+      }
     }
 
   } else if (input_format == FORMAT_ADPCM || input_format == FORMAT_YM2608) {
