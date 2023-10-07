@@ -578,6 +578,34 @@ int32_t main(int32_t argc, char* argv[]) {
 
   if (input_format == FORMAT_MP3) {
 
+    for (;;) {
+
+      decode_len = mp3_decode_exec(&mp3_decoder, pcm_buffer, sizeof(int16_t) * pcm_buffer_len);
+      if (decode_len == 0) break;
+      
+      if ((alsa_rc = snd_pcm_writei(pcm_handle, (const void*)pcm_buffer, decode_len / 2)) < 0) {    
+        if (snd_pcm_recover(pcm_handle, alsa_rc, 0) < 0) {
+          printf("error: fatal pcm data write error.\n");
+          goto exit;
+        }
+      }
+      if (use_oled) {
+        int16_t peak_l = 0;
+        int16_t peak_r = 0;
+        for (size_t i = 0; i < decode_len; i++) {
+          int16_t v = pcm_buffer[i] < 0 ? 0 - pcm_buffer[i] : pcm_buffer[i];
+          if (i & 0x01) {
+            if (v > peak_r) peak_r = v;
+          } else {
+            if (v > peak_l) peak_l = v;
+          }
+        }
+        oled_ssd1306_show_meter(&ssd1306, 12, 6, peak_l, 0);
+        oled_ssd1306_show_meter(&ssd1306, 12, 7, peak_r, 0);
+      }
+
+    }
+
   } else if (input_format == FORMAT_ADPCM || input_format == FORMAT_YM2608) {
 
     size_t fread_len = 0;
