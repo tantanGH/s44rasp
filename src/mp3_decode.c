@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 #include "mp3_decode.h"
@@ -43,7 +44,7 @@ static inline int16_t scale_12bit(mad_fixed_t sample) {
 int32_t mp3_decode_open(MP3_DECODE_HANDLE* decode, int16_t up_sampling) {
 
   // baseline
-  decode->up_sampline = up_sampling;
+  decode->up_sampling = up_sampling;
   decode->mp3_data = NULL;
   decode->mp3_data_len = 0;
   decode->mp3_quality = 0;
