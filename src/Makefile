@@ -5,7 +5,7 @@ LD = gcc
 
 CFLAGS = -O2 -Wall
 LDFLAGS =
-LIBS = -lasound -lm -static -lmad
+LIBS = ../libmad-0.15.1b/*.o -lasound -lm 
 
 OBJS = adpcm_decode.o raw_decode.o wav_decode.o ym2608_decode.o ym2608_table.o mp3_decode.o macs_decode.o oled_ssd1306.o main.o
 
