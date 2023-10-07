@@ -580,7 +580,7 @@ int32_t main(int32_t argc, char* argv[]) {
 
     for (;;) {
 
-      decode_len = mp3_decode_exec(&mp3_decoder, pcm_buffer, sizeof(int16_t) * pcm_buffer_len);
+      size_t decode_len = mp3_decode_exec(&mp3_decoder, pcm_buffer, sizeof(int16_t) * pcm_buffer_len);
       if (decode_len == 0) break;
       
       if ((alsa_rc = snd_pcm_writei(pcm_handle, (const void*)pcm_buffer, decode_len / 2)) < 0) {    
