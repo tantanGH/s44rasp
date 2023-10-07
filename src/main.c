@@ -420,10 +420,11 @@ int32_t main(int32_t argc, char* argv[]) {
   printf("File name     : %s\n", pcm_file_name);
   printf("Data size     : %zu [bytes]\n", pcm_data_size);
   printf("Data format   : %s\n", 
-    input_format == FORMAT_WAV ? "WAV" :
+    input_format == FORMAT_WAV    ? "WAV" :
     input_format == FORMAT_YM2608 ? "ADPCM(YM2608)" :
-    input_format == FORMAT_RAW ? "Raw 16bit PCM (big)" : 
-    input_format == FORMAT_MACS ? "MACS 16bit PCM (big)" :
+    input_format == FORMAT_RAW    ? "Raw 16bit PCM (big)" : 
+    input_format == FORMAT_MACS   ? "MACS 16bit PCM (big)" :
+    input_format == FORMAT_MP3    ? "MP3" :
     "ADPCM(MSM6258V)");
 
   // describe playback drivers
@@ -491,6 +492,11 @@ int32_t main(int32_t argc, char* argv[]) {
   // level check mode
   if (pcm_level_check) {
 
+    if (input_format == FORMAT_MP3) {
+      printf("MP3 level check is not supported.\n");
+      goto exit;
+    }
+    
     int16_t peak_level = 0;
     double total_level = 0.0;
     size_t num_samples = 0;
@@ -570,7 +576,9 @@ int32_t main(int32_t argc, char* argv[]) {
 
   printf("\nnow playing ... push CTRL+C to quit.\n");
 
-  if (input_format == FORMAT_ADPCM || input_format == FORMAT_YM2608) {
+  if (input_format == FORMAT_MP3) {
+
+  } else if (input_format == FORMAT_ADPCM || input_format == FORMAT_YM2608) {
 
     size_t fread_len = 0;
 
@@ -719,6 +727,9 @@ exit:
 
   // close macs decoder
   macs_decode_close(&macs_decoder);
+
+  // close mp3 decoder
+  mp3_decode_close(&mp3_decoder);
 
   // close OLED SSD1306
   if (use_oled) {
