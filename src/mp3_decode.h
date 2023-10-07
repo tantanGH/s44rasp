@@ -25,8 +25,8 @@ typedef struct {
   uint8_t* mp3_artist;
   uint8_t* mp3_album;
 
-  int32_t mp3_sample_rate;
-  int32_t mp3_channels;
+  int32_t sample_rate;
+  int32_t channels;
   size_t resample_counter;
 
   int32_t mp3_frame_options;

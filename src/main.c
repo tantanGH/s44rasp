@@ -63,6 +63,7 @@ int32_t main(int32_t argc, char* argv[]) {
   // pcm attribs
   int16_t* pcm_buffer = NULL; 
   void* fread_buffer = NULL;
+  void* mp3_read_buffer = NULL;
   char* pcm_file_name = NULL;
   char* pcm_device_name = NULL;
   int16_t up_sampling = 0;          // 0:no upsampling, 1:to 48kHz, 2:to 44.1kHz
@@ -351,12 +352,8 @@ int32_t main(int32_t argc, char* argv[]) {
       printf("error: mp3 header parse error.\n");
       goto exit;
     }
-//    pcm_freq = mp3_decoder.sample_rate;     // not yet
-//    pcm_channels = mp3_decoder.channels;    // not yet
-    pcm_freq = 48000;   // tentative
-    pcm_channels = 2;   // tentative
     skip_offset = mp3_decoder.skip_offset;
-    pcm_data_size -= skip_offset;             // overwrite      
+    pcm_data_size -= skip_offset;   // overwrite
   } else if (input_format == FORMAT_MACS) {
     if (macs_decode_parse_header(&macs_decoder, fp) < 0) {
       printf("error: macs header parse error.\n");
@@ -369,12 +366,26 @@ int32_t main(int32_t argc, char* argv[]) {
   }
   fseek(fp, skip_offset, SEEK_SET);
 
-  // dummy read for disk cache to avoid buffer underrun
-  size_t dummy_read_size = pcm_freq * 2 * 2 * 8;
-  uint8_t* dummy_buffer = malloc(dummy_read_size);
-  fread(dummy_buffer, sizeof(uint8_t), dummy_read_size, fp);
-  free(dummy_buffer);
-  fseek(fp, skip_offset, SEEK_SET);
+  if (input_format == FORMAT_MP3) {
+
+    // in case of MP3, read all data at once
+    mp3_read_buffer = malloc(pcm_data_size);
+    fread(mp3_read_buffer, sizeof(uint8_t), pcm_data_size, fp);
+
+    mp3_decode_setup(&mp3_decoder, mp3_read_data, pcm_data_size, 0);
+    pcm_freq = mp3_decoder.sample_rate;
+    pcm_channels = mp3_decoder.channels;
+
+  } else {
+
+    // dummy read for disk cache to avoid buffer underrun
+    size_t dummy_read_size = pcm_freq * 2 * 2 * 8;
+    uint8_t* dummy_buffer = malloc(dummy_read_size);
+    fread(dummy_buffer, sizeof(uint8_t), dummy_read_size, fp);
+    free(dummy_buffer);
+    fseek(fp, skip_offset, SEEK_SET);
+
+  }
 
   // OLED information display
   if (use_oled) {
@@ -450,7 +461,10 @@ int32_t main(int32_t argc, char* argv[]) {
   }
 
   // describe mp3 format
-  //  no support
+  if (input_format == FORMAT_MP3) {
+    printf("PCM frequency : %d [Hz]\n", pcm_freq);
+    printf("PCM channels  : %s\n", pcm_channels == 1 ? "mono" : "stereo");
+  }
 
   // describe macs format
   if (input_format == FORMAT_MACS) {
@@ -683,6 +697,12 @@ exit:
   if (fread_buffer != NULL) {
     free(fread_buffer);
     fread_buffer = NULL;
+  }
+
+  // reclaim mp3 read buffer
+  if (mp3_read_buffer != NULL) {
+    free(mp3_read_buffer);
+    mp3_read_buffer = NULL;
   }
 
   // close adpcm decoder

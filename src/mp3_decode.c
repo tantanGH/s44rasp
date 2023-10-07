@@ -230,7 +230,20 @@ int32_t mp3_decode_setup(MP3_DECODE_HANDLE* decode, void* mp3_data, size_t mp3_d
 
   mad_stream_buffer(&(decode->mad_stream), mp3_data, mp3_data_len);
 
-  decode->current_mad_pcm = NULL;
+  //decode->current_mad_pcm = NULL;
+
+  // decode 1st frame
+  mad_frame_decode(&(decode->mad_frame), &(decode->mad_stream));
+
+  decode->mad_frame.options = decode->mp3_frame_options;
+
+  mad_synth_frame(&(decode->mad_synth), &(decode->mad_frame));
+  mad_timer_add(&(decode->mad_timer), decode->mad_frame.header.duration);
+
+  decode->current_mad_pcm = &(decode->mad_synth.pcm);
+
+  decode->sample_rate = decode->current_mad_pcm->samplerate;
+  decode->channels = decode->current_mad_pcm->channels;
 
   return 0;
 }
