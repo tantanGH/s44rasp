@@ -372,7 +372,7 @@ int32_t main(int32_t argc, char* argv[]) {
     mp3_read_buffer = malloc(pcm_data_size);
     fread(mp3_read_buffer, sizeof(uint8_t), pcm_data_size, fp);
 
-    mp3_decode_setup(&mp3_decoder, mp3_read_data, pcm_data_size, 0);
+    mp3_decode_setup(&mp3_decoder, mp3_read_buffer, pcm_data_size, 0);
     pcm_freq = mp3_decoder.sample_rate;
     pcm_channels = mp3_decoder.channels;
 

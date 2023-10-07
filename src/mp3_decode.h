@@ -16,6 +16,7 @@ typedef mad_timer_t MAD_TIMER;
 typedef struct {
 
   int16_t up_sampling;
+  int32_t skip_offset;
 
   void* mp3_data;
   size_t mp3_data_len;

@@ -45,6 +45,7 @@ int32_t mp3_decode_open(MP3_DECODE_HANDLE* decode, int16_t up_sampling) {
 
   // baseline
   decode->up_sampling = up_sampling;
+  decode->skip_offset = 0;
   decode->mp3_data = NULL;
   decode->mp3_data_len = 0;
   decode->mp3_quality = 0;
@@ -97,17 +98,20 @@ void mp3_decode_close(MP3_DECODE_HANDLE* decode) {
 //
 int32_t mp3_decode_parse_header(MP3_DECODE_HANDLE* decode, FILE* fp) {
 
+  int rc = -1;
+
   // read the first 10 bytes of the MP3 file
   uint8_t mp3_header[10];
   size_t ret = fread(mp3_header, 1, 10, fp);
   if (ret != 10) {
     printf("error: cannot read mp3 file.\n");
-    return -1;
+    goto exit;
   }
 
   // check if the MP3 file has an ID3v2 tag
   if (!(mp3_header[0] == 'I' && mp3_header[1] == 'D' && mp3_header[2] == '3')) {
-    return 0;
+    rc = 0;
+    goto exit;
   }
 
   // extract the total tag size (syncsafe integer)
@@ -117,7 +121,9 @@ int32_t mp3_decode_parse_header(MP3_DECODE_HANDLE* decode, FILE* fp) {
   // ID3v2 version
   int16_t id3v2_version = mp3_header[3];
   if (id3v2_version < 0x03) {
-    return total_tag_size + 10;     // does not support ID3v2.2 or before
+    decode->skip_offset = total_tag_size + 10;     // does not support ID3v2.2 or before
+    rc = 0;
+    goto exit;
   }
 
   // skip extended ID3v2 header
@@ -201,7 +207,11 @@ int32_t mp3_decode_parse_header(MP3_DECODE_HANDLE* decode, FILE* fp) {
 
   }
 
-  return 10 + total_tag_size;
+  decode->skip_offset = 10 + total_tag_size;
+  rc = 0;
+
+exit:
+  return rc;
 }
 
 //
