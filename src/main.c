@@ -84,7 +84,7 @@ int32_t main(int32_t argc, char* argv[]) {
   OLED_SSD1306 ssd1306 = { 0 };
 
   // credit
-  printf("s44rasp - X68k ADPCM/PCM/WAV/MCS player for Raspberry Pi version " PROGRAM_VERSION " by tantan\n");
+  printf("s44rasp - X68k ADPCM/PCM/WAV/MP3/MCS player version " PROGRAM_VERSION " by tantan\n");
 
   // command line
   for (int16_t i = 1; i < argc; i++) {
