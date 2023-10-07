@@ -55,8 +55,8 @@ int32_t mp3_decode_open(MP3_DECODE_HANDLE* decode, int16_t up_sampling) {
   decode->mp3_album = NULL;
 
   // sampling parameters
-  decode->mp3_sample_rate = -1;
-  decode->mp3_channels = -1;
+  decode->sample_rate = -1;
+  decode->channels = -1;
   decode->resample_counter = 0;
 
   // mad
@@ -215,8 +215,8 @@ int32_t mp3_decode_setup(MP3_DECODE_HANDLE* decode, void* mp3_data, size_t mp3_d
   decode->mp3_quality = mp3_quality;
 
   // sampling parameters
-  decode->mp3_sample_rate = -1;
-  decode->mp3_channels = -1;
+  decode->sample_rate = -1;
+  decode->channels = -1;
   decode->resample_counter = 0;
 
   // mad frame options
@@ -280,9 +280,9 @@ size_t mp3_decode_exec(MP3_DECODE_HANDLE* decode, int16_t* output_buffer, size_t
 
       decode->current_mad_pcm = &(decode->mad_synth.pcm);
 
-      if (decode->mp3_sample_rate < 0) {
-        decode->mp3_sample_rate = decode->current_mad_pcm->samplerate;
-        decode->mp3_channels = decode->current_mad_pcm->channels;
+      if (decode->sample_rate < 0) {
+        decode->sample_rate = decode->current_mad_pcm->samplerate;
+        decode->channels = decode->current_mad_pcm->channels;
       }
 
     } 
