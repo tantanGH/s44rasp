@@ -1,6 +1,6 @@
 # s44rasp
 
-X680x0 ADPCM/PCM/WAV/MCS player for Raspberry Pi with OLED support
+X680x0 ADPCM/PCM/WAV/MP3/MCS player for Raspberry Pi with OLED support
 
 Raspberry Pi OS 上で動作する、主にX68k向けのPCM曲データを再生するツールです。
 
@@ -17,8 +17,11 @@ Raspberry Pi OS 上で動作する、主にX68k向けのPCM曲データを再生
 - .wav ... Windows WAV 16bit Raw PCM (little endian) stereo/mono
 - .pcm ... X680x0 4bit-12bit ADPCM (15.6kHz/mono)
 - .mcs ... X680x0 MACS animation data (16bit PCM only)
+- .mp3 ... MP3
 
 48kHzより上の周波数のデータには対応していません。15.6kHzから32kHzのデータは48kHzにアップサンプリングされます。
+
+ALSAをサポートしているLinux環境であれば利用できる可能性がありますが、確認していません。
 
 <img src='images/s44rasp.jpeg' width='800'/>
 
@@ -28,6 +31,7 @@ Raspberry Pi OS 上で動作する、主にX68k向けのPCM曲データを再生
 
 - Raspberry Pi 3B+
 - Raspberry Pi 4B
+- Raspberry Pi Zero 2 W
 - 32bit OS Lite (デスクトップ無し) 2023-05
 
 それ以外では確認していません。
@@ -54,11 +58,19 @@ Raspberry Pi OS 上で動作する、主にX68k向けのPCM曲データを再生
 
 出来上がった `s44rasp` をパスの通ったところに置くかシンボリックリンクを張ります。
 
+MP3に対応させるには `libmad0-dev` を追加で導入します。
+
+        sudo apt-get install libmad0-dev
+
+また、`Makefile-mp3` を使ってmakeします。
+
+        make -f Makefile-mp3
+
 ---
 
 ## How to Use
 
-        s44rasp [options] <input-file.[pcm|sXX|mXX|aXX|nXX|wav|mcs]>
+        s44rasp [options] <input-file.[pcm|sXX|mXX|aXX|nXX|wav|mp3|mcs]>
 
         options:
           -d hw:x,y ... ALSA出力デバイス名の指定 (hw:0,0 など)
@@ -230,6 +242,7 @@ https://github.com/tantanGH/s44rasp/assets/121137457/5f559c0e-38c9-4ff0-af5c-054
 
 ## 変更履歴
 
+- 0.5.1 (2023/10/11) ... MP3に対応
 - 0.4.1 (2023/07/17) ... レベルチェックオプション追加
 - 0.4.0 (2023/07/10) ... 16/22/24kHz raw, .mcs 対応
 - 0.3.2 (2023/06/03) ... -Wall で警告が出ないように調整
