@@ -620,7 +620,7 @@ int32_t main(int32_t argc, char* argv[]) {
 
     size_t total_decode_bytes = 0;
 
-    for (;;) {
+    while (!abort_flag) {
 
       size_t decode_len = mp3_decode_exec(&mp3_decoder, pcm_buffer, sizeof(int16_t) * pcm_buffer_len);
       if (decode_len == 0) break;
