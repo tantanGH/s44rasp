@@ -3,11 +3,11 @@ TARGET = s44rasp
 CC = gcc
 LD = gcc
 
-CFLAGS = -O2 -Wall
+CFLAGS = -O2 -Wall -D__USE_OLED__
 LDFLAGS =
-LIBS = ../libmad-0.15.1b/*.o -lasound -lm 
+LIBS = -lasound -lm 
 
-OBJS = adpcm_decode.o raw_decode.o wav_decode.o ym2608_decode.o ym2608_table.o mp3_decode.o macs_decode.o oled_ssd1306.o main.o
+OBJS = adpcm_decode.o raw_decode.o wav_decode.o ym2608_decode.o ym2608_table.o macs_decode.o oled_ssd1306.o main.o
 
 all: $(TARGET)
 
