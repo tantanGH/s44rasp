@@ -1,5 +1,7 @@
 .DS_Store
 
+libmad-0.15.1b
+
 src/*.o
 src/*~
 src/s44rasp
